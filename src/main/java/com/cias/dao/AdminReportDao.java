@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cias.entity.Banks;
 import com.cias.entity.QueryData;
+import com.cias.entity.ReportQueueData;
 import com.cias.entity.RequiredField;
 import com.cias.entity.TableMetaData;
 import com.cias.entity.TellerMaster;
@@ -26,4 +27,16 @@ public interface AdminReportDao {
 	public List<Object[]> createShowChart(String bankname);
 	public List<List<Object[]>> createChartReport(String bankname);
 	public List<String> retriveisCriteriaTables(String bankname);
+	//RabbitMQ
+	int addReportQueueData(ReportQueueData reportQueueData);
+	
+	ReportQueueData getReportQueueData(int id);
+	
+	void updateReportQueueData(ReportQueueData reportQueueData);
+	
+	public void updatereportStatus(int id, String inProcess);
+	//public String checkQueryType(String table1);
+	//public List<String> getOriginalData(String variable, String table1);
+	//public List<Object[]> getMandatoryField(String table1);
+
 }

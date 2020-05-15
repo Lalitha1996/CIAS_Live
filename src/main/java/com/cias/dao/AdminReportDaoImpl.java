@@ -1,35 +1,60 @@
 package com.cias.dao;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.internal.SessionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StreamUtils;
 
+import com.cias.utility.Block;
+import com.cias.utility.Board;
+import com.cias.utility.Table;
 import com.cias.entity.AppMessages;
 import com.cias.entity.ApplicationLabel;
 import com.cias.entity.AuditHistory;
 import com.cias.entity.Banks;
 import com.cias.entity.ColumnNames;
 import com.cias.entity.QueryData;
+import com.cias.entity.ReportQueueData;
 import com.cias.entity.RequiredField;
 import com.cias.entity.TableMetaData;
 import com.cias.entity.TellerMaster;
@@ -37,12 +62,13 @@ import com.cias.entity.ViewInfo;
 import com.cias.service.ApplicationLabelService;
 import com.cias.service.GenerateCheckDigitService;
 import com.cias.utility.CebiConstant;
-import com.cias.utility.ConnectionException;
+import com.cias.utility.MappingConstant;
+import com.cias.utility.PdfUtils;
 import com.google.gson.Gson;
 
 @Repository
 @Transactional
-public class AdminReportDaoImpl implements AdminReportDao {
+public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 
 	@Autowired
 	ApplicationLabelService applicationLabelService;
@@ -58,6 +84,15 @@ public class AdminReportDaoImpl implements AdminReportDao {
 
 	@Autowired
 	SessionFactory sessionFactory;
+	
+	@Autowired
+	CreateExcelDao createExceldao;
+	
+	@Autowired
+	CreatePdfDao createPdfDao;
+	
+	@Autowired
+	CreateCsvDao createCsvpipedao;
 
 	private static final Logger logger = Logger.getLogger(AdminReportDaoImpl.class);
 
@@ -385,11 +420,13 @@ public class AdminReportDaoImpl implements AdminReportDao {
 		String criteria = "";
 		Connection connection = null;
 		PreparedStatement prepareStatement = null;
+		Statement statement = null;
 		ResultSet resultSet = null;
 		Session session = null;
 		String query = null;
 		ColumnNames field;
-		
+		String filename = null;
+		File fzip = null;
 		
 		List<ColumnNames> names = new ArrayList<>();
 		List<AppMessages> appMessages = new ArrayList<>();
@@ -402,10 +439,19 @@ public class AdminReportDaoImpl implements AdminReportDao {
 		List<ApplicationLabel> labels = null;
 
 		try {
-			session = cebiConstant.getCurrentSession(bank);
-    		connection = ((SessionImpl) session).connection();
 			parameter = getTableData.getParameter().trim().length() > 0 ? getTableData.getParameter() : "";
 			criteria = getTableData.getQuery().trim().length() > 0 ? getTableData.getQuery() : "";
+			SimpleDateFormat formatter1 = new SimpleDateFormat("ddMMyyyy HH:mm:ss");
+			Date date1 = new Date();
+			logger.info("start ---" + formatter1.format(date1));
+			labels = applicationLabelService.retrieveAllLabels();
+			
+	  if ("Simple".equalsIgnoreCase(getTableData.getReporttype())) {
+		          
+		         session = cebiConstant.getCurrentSession(bank);
+  		         connection = ((SessionImpl) session).connection();
+  		         connection.setAutoCommit(false);
+  		         
 			if(getTableData.getTable2()=="" && getTableData.getDateA()!="" && getTableData.getDateB()!=""){
 				query= populateCompareDateQuery(getTableData,parameter,criteria,getTableData.getDateA(),getTableData.getDateB());
 			}
@@ -441,7 +487,7 @@ public class AdminReportDaoImpl implements AdminReportDao {
 				}
 				
 				
-				labels = applicationLabelService.retrieveAllLabels();
+				//labels = applicationLabelService.retrieveAllLabels();
 				while (resultSet.next()) {
 					tableMetaData = new TableMetaData();
 					
@@ -498,13 +544,172 @@ public class AdminReportDaoImpl implements AdminReportDao {
 					 tableMetaData.setNames(names);
 				}
 			}
+	  } else if("csv".equalsIgnoreCase(getTableData.getReporttype())) {
+		  // by alimouala
+		     session = cebiConstant.getCurrentSession(bank);
+	         connection = ((SessionImpl) session).connection();
+	         connection.setAutoCommit(false);
+		  query=getTableData.getTable2().isEmpty()?super.populateQuery(getTableData, parameter, criteria):super.populateJoinQuery(getTableData, parameter, criteria);
+		  System.out.println(query);
+		  
+		  if (criteria != null && !criteria.isEmpty()) {
+				validateTableCriteria(criteria, getTableData,
+						tableMetaData, appMessages);
+			}
+			statement = (Statement) connection.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+			//statement.setFetchSize(5000);
+			resultSet = statement.executeQuery(query);
 			
+			StringBuilder buffer = new StringBuilder();
+			ResultSetMetaData rsmd = resultSet.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			
+			List<String> ColumnLables = Arrays.asList(getTableData.getColumnNames().split(","));
+			
+			List<String> colummnName = new ArrayList<String>();
+			for (int i = 1; i <=columnCount; i++) {
+				//buffer.append(rsmd.getColumnName(i) + " , "); // this appends original columnNames..
+				buffer.append(ColumnLables.get(i-1) + " , ");
+				colummnName.add(rsmd.getColumnName(i));
+			}
+			int i = 0;
+			int j = 1;
+			BufferedWriter bw = null;
+			FileWriter fw = null;
+
+			SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+			Date date = new Date(); 
+			filename = formatter.format(date) + "_" + getTableNames(getTableData) + "_" + getTableData.getReportDataId() + ".csv";
+			String csvFileLoc =MappingConstant.BANK_REPORT_LOCATION + filename;
+			fw = new FileWriter(csvFileLoc, true);
+			bw = new BufferedWriter(fw);
+			bw.append(buffer.toString());
+			
+			while (resultSet.next()) {
+				
+				bw.append(CebiConstant.NEW_LINE);
+				for (int k = 0; k < colummnName.size(); k++) {
+					String label = colummnName.get(k);
+					label = label.contains("(") && label.contains(")") ? label.substring(label.indexOf('(') + 1, label.indexOf(')')) : label;
+					label.trim();
+					if (resultSet.getString(label) == null || resultSet.getString(label).isEmpty()) {
+						bw.append(StringUtils.rightPad(CebiConstant.EMPTY_SPACE, label.length())).append("    ,    ");
+					} else
+						bw.append(StringUtils.rightPad(resultSet.getString(label).trim(), resultSet.getString(label).trim().length() - label.length())).append("    ,    ");
+					;
+				}
+				i++;
+				
+				if (i % (j * 10000) == 0) {
+					j++;
+					bw.flush();
+				}
+			}
+			bw.close();
+			
+			Date enddate = new Date();
+			ReportQueueData reportQueueData = getReportQueueData(getTableData.getReportDataId());
+			reportQueueData.setFileName(filename);
+			reportQueueData.setTimecomplete(enddate);
+			reportQueueData.setTimetake(enddate.getTime() - date1.getTime() + "");
+			reportQueueData.setStatus(CebiConstant.COMPLETED);
+			reportQueueData.setTotalCount(i + "");
+			updateReportQueueData(reportQueueData);
+            createZipFile(filename, csvFileLoc);
+			
+			
+	  }else if ("excel".equalsIgnoreCase(getTableData.getReporttype())) {
+		    byte[] bytearray  = createExceldao.downloadExcel(getTableData, bank);
+			SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+			Date date = new Date();
+			filename = formatter.format(date) + "_"+ getTableNames(getTableData) + "_"+ getTableData.getReportDataId() + ".xlsx";
+		    String csvFileLoc =MappingConstant.BANK_REPORT_LOCATION + filename;
+		
+				try {
+					FileOutputStream out = new FileOutputStream(new File(csvFileLoc));
+					out.write(bytearray);
+					out.close();
+
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			Date enddate = new Date();
+			ReportQueueData reportQueueData = getReportQueueData(getTableData.getReportDataId());
+			reportQueueData.setFileName(filename);
+			reportQueueData.setTimecomplete(enddate);
+			reportQueueData.setTimetake(enddate.getTime()- date1.getTime() + "");
+			reportQueueData.setStatus(CebiConstant.COMPLETED);
+			//reportQueueData.setTotalCount(i + "");
+			updateReportQueueData(reportQueueData);
+			createZipFile(filename, csvFileLoc);
+			
+			} else if ("pdf".equalsIgnoreCase(getTableData.getReporttype())) {
+				
+				byte[] PdfbyteArray = createPdfDao.downloadPdf(getTableData, bank);
+				SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+				Date date = new Date();
+				filename = formatter.format(date) + "_"+ getTableNames(getTableData) + "_"+ getTableData.getReportDataId() + ".pdf";
+			    String csvFileLoc =MappingConstant.BANK_REPORT_LOCATION + filename;
+			
+					try {
+						
+						FileOutputStream out = new FileOutputStream(new File(csvFileLoc));
+						out.write(PdfbyteArray);
+						out.close();
+
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				Date enddate = new Date();
+				ReportQueueData reportQueueData = getReportQueueData(getTableData.getReportDataId());
+				reportQueueData.setFileName(filename);
+				reportQueueData.setTimecomplete(enddate);
+				reportQueueData.setTimetake(enddate.getTime()- date1.getTime() + "");
+				reportQueueData.setStatus(CebiConstant.COMPLETED);
+				//reportQueueData.setTotalCount(i + "");
+				updateReportQueueData(reportQueueData);
+				createZipFile(filename, csvFileLoc);
+				
+			}else if("csvpipe".equalsIgnoreCase(getTableData.getReporttype())) {
+				
+				byte[] csvbyteArray = createCsvpipedao.downloadCsvPipeSeperator(getTableData, bank);
+				SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+				Date date = new Date();
+				filename = formatter.format(date) + "_"+ getTableNames(getTableData) + "_"+ getTableData.getReportDataId() + ".csv";
+			    String csvFileLoc = MappingConstant.BANK_REPORT_LOCATION +filename;
+			
+					try {
+						
+						FileOutputStream out = new FileOutputStream(new File(csvFileLoc));
+						out.write(csvbyteArray);
+						out.close();
+
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				Date enddate = new Date();
+				ReportQueueData reportQueueData = getReportQueueData(getTableData.getReportDataId());
+				reportQueueData.setFileName(filename);
+				reportQueueData.setTimecomplete(enddate);
+				reportQueueData.setTimetake(enddate.getTime()- date1.getTime() + "");
+				reportQueueData.setStatus(CebiConstant.COMPLETED);
+				//reportQueueData.setTotalCount(i + "");
+				updateReportQueueData(reportQueueData);
+				createZipFile(filename, csvFileLoc);
+				
+			}
 
 			Gson gson = new Gson();
 			tableMetaData.setChartsData(gson.toJson(MultiChart));
 			tableMetaData.setChartsDataFields(MultiChartfields);
 			tableMetaData.setAppLabels(labels);
-			data.add(tableMetaData);
+			data.add(tableMetaData);   
 			validateTableData(data, appMessages);
 			
 		} catch (Exception e) {
@@ -533,6 +738,37 @@ public class AdminReportDaoImpl implements AdminReportDao {
 
 	}
 
+	public void createZipFile(String filename,String csvFileLoc)throws Exception{
+		
+		String zipFileName = MappingConstant.BANK_REPORT_LOCATION + filename + ".zip";
+		File fzip = new File(zipFileName);
+		ZipOutputStream zippedOut = new ZipOutputStream(new FileOutputStream(fzip));
+		FileSystemResource resource = new FileSystemResource(csvFileLoc);
+		ZipEntry e = new ZipEntry(resource.getFilename());
+		e.setSize(resource.contentLength());
+		e.setTime(System.currentTimeMillis());
+		zippedOut.putNextEntry(e);
+		StreamUtils.copy(resource.getInputStream(), zippedOut);
+		zippedOut.closeEntry();
+		zippedOut.finish();
+		
+	}
+	
+	/*
+	 * public String getTableName(QueryData getTabledata, List<ApplicationLabel>
+	 * lables) { StringBuilder tableName = new StringBuilder();
+	 * 
+	 * if (getTabledata.getTable1() != "" || !getTabledata.getTable1().isEmpty()) {
+	 * for (ApplicationLabel lable : lables) { if
+	 * (lable.getLabelCode().trim().equalsIgnoreCase(getTabledata.getTable1().trim()
+	 * )) { tableName.append(lable.getAppLabel().trim()); break; } } } if
+	 * (!getTabledata.getTable2().isEmpty()) { String[] tables =
+	 * getTabledata.getTable2().split(","); for (String table : tables) { for
+	 * (ApplicationLabel lable : lables) { if
+	 * (lable.getLabelCode().trim().equalsIgnoreCase(table.trim())) {
+	 * tableName.append(",").append(lable.getAppLabel().trim()); break; } } } }
+	 * return tableName.toString(); }
+	 */
 
 	protected void populateAuditHistory(String table1,String table2, TellerMaster master, String query) {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy");
@@ -791,5 +1027,36 @@ public class AdminReportDaoImpl implements AdminReportDao {
 	        List<String> list = query.list();
 	        return list;
 	}
+	
+	// queue methods...	
+	@Override
+	public int addReportQueueData(ReportQueueData reportQueueData) {
+		return (int) sessionFactory.getCurrentSession().save(reportQueueData);
+	}
+
+	@Override
+	public void updateReportQueueData(ReportQueueData reportQueueData) {
+		sessionFactory.getCurrentSession().update(reportQueueData);
+	}
+
+	@Override
+	@Transactional
+	public ReportQueueData getReportQueueData(int id) {
+		return (ReportQueueData) sessionFactory.getCurrentSession().get(
+				ReportQueueData.class, id);
+	}
+
+	@Override
+	public void updatereportStatus(int id, String inProcess) {
+		Query query = sessionFactory
+				.getCurrentSession()
+				.createSQLQuery(
+						"UPDATE `reportqueuetable` SET `status`= :rStatus WHERE `id` = :rid");
+		query.setParameter("rStatus", inProcess);
+		query.setParameter("rid", id);
+		query.executeUpdate();
+	}
+
+
 	
 }

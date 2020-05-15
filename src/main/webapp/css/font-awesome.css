@@ -550,7 +550,7 @@
 .fa-bar-chart-o:before,
 .fa-bar-chart:before {
   content: "\f080";
-  color:#777;
+  color:white;
 }
 .fa-twitter-square:before {
   content: "\f081";

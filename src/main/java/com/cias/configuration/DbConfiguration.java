@@ -21,6 +21,7 @@ import com.cias.entity.ApplicationLabel;
 import com.cias.entity.AuditHistory;
 import com.cias.entity.Banks;
 import com.cias.entity.QueryData;
+import com.cias.entity.ReportQueueData;
 import com.cias.entity.RequiredField;
 import com.cias.entity.TellerMaster;
 import com.cias.entity.ViewInfo;
@@ -49,7 +50,7 @@ public class DbConfiguration {
 		dataSource.setDriverClassName(env.getProperty(appName + ".driverClassName"));
 		dataSource.setUrl(env.getProperty(appName + ".databaseurl"));
 		dataSource.setUsername(env.getProperty(appName + ".username"));
-        dataSource.setPassword(AES.decrypt(env.getProperty(appName + ".password")));
+	    dataSource.setPassword(AES.decrypt(env.getProperty(appName + ".password")));
 		//dataSource.setPassword(env.getProperty(appName + ".password"));
 		return dataSource;
 	}
@@ -58,7 +59,7 @@ public class DbConfiguration {
 	public LocalSessionFactoryBean getSessionFactory(@Qualifier("basicDataSource") DataSource dataSource) {
 		LocalSessionFactoryBean localSessionFactoryBean = new LocalSessionFactoryBean();
 		localSessionFactoryBean.setDataSource(dataSource);
-		localSessionFactoryBean.setAnnotatedClasses(ViewInfo.class,ApplicationLabel.class, TellerMaster.class, RequiredField.class, AuditHistory.class, QueryData.class, Banks.class);
+		localSessionFactoryBean.setAnnotatedClasses(ViewInfo.class,ApplicationLabel.class, TellerMaster.class, RequiredField.class, AuditHistory.class, QueryData.class, Banks.class,ReportQueueData.class);
 		localSessionFactoryBean.setHibernateProperties(getHibernateProperties());
 		return localSessionFactoryBean;
 	}

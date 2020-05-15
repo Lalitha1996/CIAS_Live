@@ -70,6 +70,7 @@ public class CebiConstant {
 	public static final String RIGHT = "                                                                                                                   ";
 	public static final String NEW_LINE = "\n";
 	public static final String EMPTY_SPACE = "  ";
+	public static final String SPACE = "                 ";
 	public static final String COMMA = " , ";
 	public static final String PIPELINE = "| ";
 	public static final String QRY_FROM = "FROM ";
@@ -85,6 +86,9 @@ public class CebiConstant {
 	public static final String BANK_CODE = "bankCode";	
 	public static String BANKNAME=null;
 	public static final String INLINE = "inline";
+	public static final String COMPLETED="COMPLETED";
+	public static final String IN_PROCESS="INPROCESS";
+	public static final String IN_QUEUE="IN_QUEUE";
 	public static String NAME_ALREADY_USED_ERR="ORA-00955: name is already used by an existing object";
 	public static String SERVICE_REQUESTED_CONNECT_ERR="ORA-12514: TNS:listener does not currently know of service requested in connect descriptor";
 	public static String Communication_Channel="ORA-03150: end-of-file on communication channel for database link\n"

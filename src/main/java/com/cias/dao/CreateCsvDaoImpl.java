@@ -16,10 +16,12 @@ import javax.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.internal.SessionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.cias.entity.ReportQueueData;
 import com.cias.entity.QueryData;
 import com.cias.utility.CebiConstant;
 import com.cias.utility.ConnectionException;
@@ -34,6 +36,9 @@ public class CreateCsvDaoImpl extends PdfUtils implements CreateCsvDao {
 
 	@Autowired
 	CebiConstant cebiConstant;
+	
+	@Autowired
+	SessionFactory sessionFactory;
 
 	@Override
 	public byte[] downloadCsv(QueryData queryData, String bank) {
@@ -118,7 +123,7 @@ public class CreateCsvDaoImpl extends PdfUtils implements CreateCsvDao {
 		columns = queryData.getColumnNames().trim().length() > 0 ? queryData.getColumnNames() : "";
 		
 		// by Mskh
-		 if(queryData.getTable2()==""||queryData.getTable2()==null){ 
+		 if(queryData.getTable2().isEmpty()){ 
 			 
 			 query = populateQuery(queryData, parameter, criteria);
 		}else{
@@ -163,6 +168,21 @@ public class CreateCsvDaoImpl extends PdfUtils implements CreateCsvDao {
 		return outArray;
 	}
 
+	
+	//RabbitMQ
+	
+	@Override
+	public int addReportQueueData(ReportQueueData reportQueueData) {
+		return (int) sessionFactory.getCurrentSession().save(reportQueueData);
+	}
+
+	@Override
+	@Transactional
+	public ReportQueueData getReportQueueData(int id) {
+		return (ReportQueueData) sessionFactory.getCurrentSession().get(ReportQueueData.class, id);
+	}
+	
+	
 	protected void closeConnection(ResultSet resultSet, Connection connection,
 			PreparedStatement prepareStatement) {
 		if (resultSet != null) {

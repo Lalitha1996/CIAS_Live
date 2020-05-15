@@ -11,10 +11,16 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.cias.dao.AdminReportDao;
 import com.cias.dao.AdminReportDaoImpl;
+import com.cias.dao.ApplicationLabelDao;
+import com.cias.entity.ApplicationLabel;
+import com.cias.entity.Banks;
 import com.cias.entity.QueryData;
 import com.cias.service.GenerateCheckDigitService;
 import com.itextpdf.text.BaseColor;
@@ -39,6 +45,11 @@ public class PdfUtils {
 	
 	@Autowired
 	AdminReportDao adminreportdao;
+	
+		
+    @Autowired
+    ApplicationLabelDao applicationLabelDao;
+    
 	
 	private static final Logger logger = Logger.getLogger(PdfUtils.class);
 
@@ -213,22 +224,57 @@ public class PdfUtils {
 
 	}
 
-	public PdfPTable addDateAndIdTable() throws Exception {
+	public String getTableNames(QueryData getTabledata) {
+		 List<ApplicationLabel> lables=applicationLabelDao.retrieveAllLabels();
+		 StringBuilder tableName = new StringBuilder();
+
+		if (getTabledata.getTable1() != "" || !getTabledata.getTable1().isEmpty()) {
+			for (ApplicationLabel lable : lables) {
+				if (lable.getLabelCode().trim().equalsIgnoreCase(getTabledata.getTable1().trim())) {
+					tableName.append(lable.getAppLabel().trim());
+					break;
+				}
+			}
+		}
+		if (!getTabledata.getTable2().isEmpty()) {
+			String[] tables = getTabledata.getTable2().split(",");
+			for (String table : tables) {
+				for (ApplicationLabel lable : lables) {
+					if (lable.getLabelCode().trim().equalsIgnoreCase(table.trim())) {
+						tableName.append(",").append(lable.getAppLabel().trim());
+						break;
+					}
+				}
+			}
+		}
+		return tableName.toString();
+	}
+
+
+public PdfPTable addBankAndTable(QueryData getTabledata,String bankcd) throws Exception{
+
+        PdfPTable table = new PdfPTable(1);
+        ClassLoader classLoader = new AdminReportDaoImpl().getClass().getClassLoader();
+        //Image logo = Image.getInstance(classLoader.getResource(CebiConstant.BANK_LOGO_IMAGE));
+        //logo.scalePercent(100);
+        table.setWidthPercentage(100);
+        table.addCell(getCell(getBankName(bankcd),PdfPCell.ALIGN_CENTER));
+        table.addCell(getCell(getTableNames(getTabledata), PdfPCell.ALIGN_CENTER));
+        return table;
+}
+
+
+	public PdfPTable addDateAndId(int reportId) throws Exception {
 		PdfPTable table = new PdfPTable(2);
 		Random random = new Random(System.currentTimeMillis());
-		int branchId = random.nextInt(12) + 1;
-		int reportId = random.nextInt(15) + 1;
 		ClassLoader classLoader = new AdminReportDaoImpl().getClass().getClassLoader();
 		Image logo = Image.getInstance(classLoader.getResource(CebiConstant.BANK_LOGO_IMAGE));
 		logo.scalePercent(100);
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy");
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		table.setWidthPercentage(100);
-		table.addCell(getEmptyCell());
-		table.addCell(getCell("Branch Id : " + branchId, PdfPCell.ALIGN_RIGHT));
 		table.addCell(getCell("Date : " + simpleDateFormat.format(new Date()), PdfPCell.ALIGN_LEFT));
 		table.addCell(getCell("Report Id : " + reportId, +PdfPCell.ALIGN_RIGHT));
 		return table;
-
 	}
 
 	public PdfPTable createDataTable(List<String> columnLables, List<String> dbColumns, ResultSet resultSet) throws SQLException, DocumentException {
@@ -236,7 +282,7 @@ public class PdfUtils {
 		table.setWidthPercentage(100);
 		table.setWidths(columnsWidths(columnLables.size()));
 		table.setHeaderRows(2);
-		table.addCell(getTableHeadingCell("Report Heading", PdfPCell.ALIGN_CENTER, columnLables.size()));
+		//table.addCell(getTableHeadingCell("Report Heading", PdfPCell.ALIGN_CENTER, columnLables.size()));
 		PdfPCell cell = new PdfPCell();
 		for (String lbl : columnLables) {
 			cell = new PdfPCell(new Phrase(lbl, headerBold));
@@ -339,6 +385,14 @@ public class PdfUtils {
 		cell.setBorder(noBorder);
 		return cell;
 	}
+	
+	
+	public String getBankName(String bankcd) {
+		Banks bankdata = adminreportdao.retreiveDbConnection(bankcd);
+		bankdata.getBankName();
+	 	return bankdata.getBankName().trim();
+	}
+	
 
 	/*
 	 * public PdfPCell getResultCell(String text, int alignment) { PdfPCell cell

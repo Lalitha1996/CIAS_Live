@@ -4,10 +4,15 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.apache.log4j.Logger;
@@ -16,6 +21,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.hibernate.Session;
@@ -44,7 +50,7 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 		String criteria = "";
 		String query=null;
 		int colNum = 0;
-		int rowcnt = 1;
+		int rowcnt = 4;	
 		byte[] outArray = null;
 		Session session = cebiConstant.getCurrentSession(bank);
 		ResultSet resultSet = null;
@@ -53,27 +59,53 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 		//HSSFWorkbook wb = new HSSFWorkbook();   // supports 65k records only
 		//HSSFSheet sheet = wb.createSheet();
 		
-		SXSSFWorkbook wb = new SXSSFWorkbook(100);     // SUPPORTS 10lack records up to ..       
+		SXSSFWorkbook wb = new SXSSFWorkbook(100);     // SUPPORTS 10lack records up to ..  with xlsx format     
 		Sheet sheet = wb.createSheet();
 
 		CellStyle cellStyle = wb.createCellStyle();
 		cellStyle.setWrapText(true);
 		Row row = sheet.createRow(0);
 		Cell cell = row.createCell(0);
-
+		//sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)  
+		sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 10)); 
+		
 		Font font = wb.createFont();
 		font.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD);
 		cellStyle.setFont(font);
+		
+		//Set bankName
+		cell.setCellStyle(cellStyle);
+		cellStyle.setAlignment(CellStyle.ALIGN_CENTER);
+		cell.setCellValue(getBankName(bank));
+		
+		//Set tableName
+		row = sheet.createRow(1);
+		cell = row.createCell(0);
+		//sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstCol, lastCol)  
+		sheet.addMergedRegion(new CellRangeAddress(1,1,0,10));
+		cell.setCellStyle(cellStyle);
+		cellStyle.setAlignment(CellStyle.ALIGN_CENTER);
+		cell.setCellValue(getTableNames(queryData));
+		
+		//ReportId,ReportDate,Time
+		row = sheet.createRow(2);
+		cell = row.createCell(0);
+		sheet.addMergedRegion(new CellRangeAddress(2,2,0,10));
+		cell.setCellStyle(cellStyle);
+		cellStyle.setAlignment(CellStyle.ALIGN_CENTER);
+		    SimpleDateFormat sdf =  new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");  
+	        String format = sdf.format(new Date());
+	        String date = format.substring(0, 10);
+	        String time = format.substring(11, 19);
+            cell.setCellValue("ReportId: "+queryData.getReportDataId()+CebiConstant.SPACE+"ReportDate:"+date+CebiConstant.SPACE+"Time:"+time);
+		
 
 		ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
 		columns = queryData.getColumnNames().trim().length() > 0 ? queryData.getColumnNames() : "";
 		parameter = queryData.getParameter().trim().length() > 0 ? queryData.getParameter() : "";
 		criteria = queryData.getQuery().trim().length() > 0 ? queryData.getQuery() : "";
-		if(queryData.getTable2()==""||queryData.getTable2()==null){
-			 query = populateQuery(queryData, parameter, criteria);
-		}else{
-			 query = populateJoinQuery(queryData, parameter, criteria);
-		}
+		
+		query = queryData.getTable2().isEmpty()?populateQuery(queryData, parameter, criteria):populateJoinQuery(queryData, parameter, criteria);
 		
 		try {
 			 connection = ((SessionImpl) session).connection();
@@ -83,17 +115,21 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 			String lstparam = parameter.substring(0, (parameter.length() - 1));
 			List<String> dbColumns = Arrays.asList(lstparam.split(","));
 			List<String> columnLables = Arrays.asList(columns.split(","));
-
-			for (String lbl : columnLables) {
-				cell = row.createCell(colNum);
-				cell.setCellStyle(cellStyle);
-				sheet.autoSizeColumn((short)(colNum));
-				cell.setCellValue(lbl);
-				++colNum;
-			}
+            
+			 //table fields
+             row = sheet.createRow(3);
 			
+             		for (String lbl : columnLables) {
+             				cell = row.createCell(colNum);
+             				cell.setCellStyle(cellStyle);
+             				sheet.autoSizeColumn((short) (colNum));
+             				cell.setCellValue(lbl);
+             				++colNum;
+             			}
 			
-			while (resultSet.next()) {
+          
+            while (resultSet.next()) {
+		
 				colNum = 0;
 				row = sheet.createRow(rowcnt);
 				for (String label : dbColumns) {
@@ -109,13 +145,34 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 					++colNum;
 				}
 				++rowcnt;
+				
+				//spreadsheet
+				int physicalNumberOfRows = sheet.getPhysicalNumberOfRows();
+				
+				if (physicalNumberOfRows > 1048570) {
+					sheet = wb.createSheet();
+					physicalNumberOfRows = 0;
+					rowcnt = 1;
+					colNum = 0;
+					row = sheet.createRow(0);
+					for (String lbl : columnLables) {
+						cell = row.createCell(colNum);
+						cell.setCellStyle(cellStyle);
+						sheet.autoSizeColumn((short) (colNum));
+						cell.setCellValue(lbl);
+						++colNum;
+						}
+					}
+
 			}
+
 			wb.write(outByteStream);
+			
 		} catch (Exception e) {
 			logger.info(e.getMessage());
-		}catch (OutOfMemoryError error) {
+		} catch (OutOfMemoryError error) {
 			throw new ConnectionException("Failed to allocate Max memory...!");
-		}finally {
+		} finally {
 			if (resultSet != null) {
 				try {
 					resultSet.close();

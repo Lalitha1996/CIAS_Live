@@ -31,6 +31,9 @@ public class QueryData implements Serializable {
 	private String parameter;
 	
 	@Transient
+	private String timeAdd;
+
+	@Column(name = "columnNames")
 	private String columnNames;
 	
 	@Column(name = "qry")
@@ -53,6 +56,7 @@ public class QueryData implements Serializable {
 
 	@Column(name = "bank_code")
 	private String bankCode;
+	
 	@Transient
 	private String reportDetails;
 	
@@ -81,6 +85,20 @@ public class QueryData implements Serializable {
 	//@Column(name="dateB")
 	@Transient
 	private String dateB;
+	
+	@Transient
+	private String reporttype = "Simple";
+	@Transient
+	private int reportDataId;
+	
+	public String getTimeAdd() {
+		return timeAdd;
+	}
+
+	public void setTimeAdd(String timeAdd) {
+		this.timeAdd = timeAdd;
+	}
+	
 	
 	public String getQryTitle() {
 		return qryTitle;
@@ -233,6 +251,22 @@ public class QueryData implements Serializable {
 
 	public void setDateB(String dateB) {
 		this.dateB = dateB;
+	}
+
+	public String getReporttype() {
+		return reporttype;
+	}
+
+	public void setReporttype(String reporttype) {
+		this.reporttype = reporttype;
+	}
+
+	public int getReportDataId() {
+		return reportDataId;
+	}
+
+	public void setReportDataId(int reportDataId) {
+		this.reportDataId = reportDataId;
 	}
 
 

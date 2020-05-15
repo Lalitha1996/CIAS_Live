@@ -75,7 +75,7 @@
 													},
 													axisX : {
 														title : "Branch no",
-														interval: 3
+														interval: 100
 													},
 													data : [ {
 														type : "area",
@@ -107,7 +107,7 @@
 													},
 													axisX : {
 														title : "Branch no",
-														interval: 3
+														interval: 100
 													},
 													data : [ {
 														type : "line",
@@ -134,7 +134,7 @@
 													},
 													axisX : {
 														title : "Branch no",
-														interval: 3
+														interval: 100
 													},
 													data : [ {
 

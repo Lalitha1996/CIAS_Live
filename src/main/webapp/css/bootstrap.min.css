@@ -4535,7 +4535,7 @@ select[multiple].input-group-sm>.form-control, select[multiple].input-group-sm>.
 
 @media ( min-width :768px) {
 	.navbar {
-		border-radius: 4px
+		border-radius: 0px
 	}
 }
 
@@ -4889,12 +4889,11 @@ select[multiple].input-group-sm>.form-control, select[multiple].input-group-sm>.
 }
 
 .navbar-default {
-	background-color: #f8f8f8;
+	background-color: #48aef7a1;
 	/* border-color: #e7e7e7; */
 	padding: 0px;
-    box-shadow: inset 5px 0 10px #CCE;
-    border-color: #777;
-    margin: 3px 0px 0px 1px;	
+    /* box-shadow: inset 5px 0 10px #CCE; */
+    margin: 0px 0px 0px 1px;	
 }
 
 .navbar-default .navbar-brand {
@@ -4912,7 +4911,7 @@ select[multiple].input-group-sm>.form-control, select[multiple].input-group-sm>.
 }
 
 .navbar-default .navbar-nav>li>a {
-	color: #777
+	color: white;
 }
 
 .navbar-default .navbar-nav>li>a:focus, .navbar-default .navbar-nav>li>a:hover
@@ -4924,7 +4923,7 @@ select[multiple].input-group-sm>.form-control, select[multiple].input-group-sm>.
 .navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:focus,
 	.navbar-default .navbar-nav>.active>a:hover {
 	color: #555;
-	background-color: #e7e7e7
+	background-color: white
 }
 
 .navbar-default .navbar-nav>.disabled>a, .navbar-default .navbar-nav>.disabled>a:focus,

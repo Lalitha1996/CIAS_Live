@@ -58,7 +58,7 @@ table {
 	border-width: 1px;
 	border-color: #0000001c;
 	border-style: solid;
-	margin: 0 auto;
+	margin: 10px 0px 0px 85px;
 	overflow: auto;
 	height: 649px; 
 	position: relative;
@@ -356,7 +356,7 @@ table {
 	height: 28px;
 }
 .form_input{
-	border-color: #9a1750;
+	border-color: #179a9a73;
     border-width: 0.5px;
     border-style: solid;
     width: 23.3%;
@@ -816,15 +816,15 @@ form {
 
 
 /* Modal Content/Box */
-.modal-content {
+/* .modal-content {
 	background-color: #fefefe;
 	margin: 5% auto 15% auto;
-	/* 5% from the top, 15% from the bottom and centered */
+	5% from the top, 15% from the bottom and centered
 	border: 10px solid #888;
-	width: 82%;   /* Could be more or less, depending on screen size */
-	/* height: 70%;  */
+	width: 82%;   Could be more or less, depending on screen size
+	height: 70%; 
 	
-}
+} */
 .modal-content4 {
 	background-color: #fefefe;
 	margin: 5% auto 15% auto;

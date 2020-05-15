@@ -19,4 +19,10 @@ public interface AdminReportService {
 	public List<Chart> showchartPage(String bank);
 	public List<List<Chart>> showDepositchart(String bank);
 	public List<String> retriveisCriteriaTables(String bankname);
+	//RabbitMQ
+	List<TableMetaData> buildSqlQuery(QueryData getTableData, String bank, TellerMaster tellerMaster);
+	public Map<String,Object> csvDownloadQueue(QueryData queryData, String bank);
+	public void updatereportStatus(int id, String inProcess);
+	public Map<String,Object> checkQueueIsExist(QueryData queryData, String bank);
+	
 }

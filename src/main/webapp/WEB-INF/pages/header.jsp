@@ -101,9 +101,19 @@
 		<%-- <li class=" nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/dashboard"><i class="fa fa-dashboard"></i>DashBoard</a></li> --%>
 		<li class=" nav-item"><a class="nav-link" title="GenerateReport" href="${pageContext.request.contextPath}/report"><i class="fa fa-bar-chart" aria-hidden="true"></i>GenerateReport</a></li>
 		<li class=" nav-item"><a class="nav-link" title="FavouriteList" href="${pageContext.request.contextPath}/showFavouriteList"><i class="fa fa-bookmark"></i>FavouriteList</a></li>
+		<li class=" nav-item"><a class="nav-link" title="StaticReport" href="${pageContext.request.contextPath}/staticReport"><i class="fa fa-bar-chart" aria-hidden="true"></i>StaticReport</a></li>
 		<li class=" nav-item"><a class="nav-link" title="Admin" href="${pageContext.request.contextPath}/settings"><i class="fa fa-cog"></i>Admin</a></li>
 		<li class=" nav-item"><a class="nav-link" title="Help" href="${pageContext.request.contextPath}/help"><i class="fa fa-question-circle"></i></i>Help</a></li>
 		<li class=" nav-item"><a href="#" onclick="fullScreen()" title="FullScreen"><i class="fa fa-expand"></i>FullScreen</a></li>
+    <%--  <div class="dropdown1">
+    <span data-toggle="dropdown">Download <i class="fa fa-caret-down"></i>
+    </span>
+    <div class="dropdown-content1">
+       <a id="testing" href="${pageContext.request.contextPath}/downloadreportPage?status=inprocess">Inprocess</a>
+       <a href="${pageContext.request.contextPath}/downloadreportPage?status=completed" class="download">Downloaded</a>
+       <a href="#">Status</a>
+    </div>
+  </div>  --%>
     </ul>
     
   </div>

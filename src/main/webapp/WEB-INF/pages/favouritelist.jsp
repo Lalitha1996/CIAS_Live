@@ -86,7 +86,7 @@ z-index:9999;
 	<!-- <div class="report_bg_patch"> -->
 	<div id="userFav">
 		<h2 style="color: black; font-size: 28px; text-align: left; margin-top: 0px">
-			<i class="glyphicon glyphicon-star-empty" style="margin-left: 15px;"></i>&nbsp;&nbsp;User Favourite List
+			<i class="fa fa-star" style="margin-left: 15px;"></i>&nbsp;&nbsp;User Favourite List
 		</h2>
 		<div>
 			<ul class="nav nav-tabs" id="myTab" role="tablist">

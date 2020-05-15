@@ -10,7 +10,7 @@ import com.cias.entity.QueryData;
 public class CreatePdfServiceImpl implements CreatePdfService {
 
 	@Autowired
-	CreatePdfDao createPdfDao;;
+	CreatePdfDao createPdfDao;
 
 	public byte[] downloadPdf(QueryData queryData, String bank) {
 		byte[] bytes = null;

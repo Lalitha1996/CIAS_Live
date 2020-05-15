@@ -126,14 +126,35 @@
     <artifactId>gson</artifactId>
     <version>2.8.5</version>
 </dependency>
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-messaging -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-messaging</artifactId>
+    <version>4.3.6.RELEASE</version>
+</dependency>
 
-		
-	<!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
+				<!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
 			<version>4.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-rabbit</artifactId>
+			<version>1.4.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-amqp</artifactId>
+			<version>1.4.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		
 
 	</dependencies>
 	<build>

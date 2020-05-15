@@ -423,7 +423,68 @@ public class AdminReportController {
 		return pdfResponse;
 	}
 	
+	
+	// alimoula queue downloads...
+	
+	@RequestMapping(value = MappingConstant.DOWNLOAD_CSV_QUEUE, method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> exportDataToCsv(
+			@RequestBody QueryData queryData, HttpServletRequest request)
+			throws IOException {
+		Map<String, Object> map = new HashMap<>();
+		queryData.setReporttype("csv");
+		HttpSession session = request.getSession();
+		String bank = (String) session.getAttribute("bank");
+		map = adminReportService.checkQueueIsExist(queryData, bank);
+		if (map.size() >= 2) {
+			if (map.containsKey("0")) {
+				String str = map.get("0").toString();
+				map.put("msg", str);
+			}else if(map.containsKey("2")){
+				String str = map.get("2").toString();
+				map.put("msg", str);
+			}else {
+				String str = map.get("1").toString();
+				map.put("msg", str);
+			}
+			return map;
+			// return adminReportService.csvDownloadQueue(queryData, bank);
+		} else {
+			return adminReportService.csvDownloadQueue(queryData, bank);
+		}
 
+	}
+
+	@RequestMapping(value = MappingConstant.DOWNLOAD_CSV_PIPE_QUEUE, method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> exportDataToTxt(
+			@RequestBody QueryData queryData, HttpServletRequest request)
+			throws IOException {
+		HttpSession session = request.getSession();
+		queryData.setReporttype("csvpipe");
+		String bank = (String) session.getAttribute("bank");
+		return adminReportService.csvDownloadQueue(queryData, bank);
+	}
+
+	@RequestMapping(value = MappingConstant.DOWNLOAD_XLS_QUEUE, method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> exportDataToXls(
+			@RequestBody QueryData queryData, HttpServletRequest request)
+			throws IOException {
+		HttpSession session = request.getSession();
+		queryData.setReporttype("xls");
+		String bank = (String) session.getAttribute("bank");
+		return adminReportService.csvDownloadQueue(queryData, bank);
+	}
+	
+	@RequestMapping(value = MappingConstant.DOWNLOAD_PDF_QUEUE, method = RequestMethod.POST)
+	public @ResponseBody Map<String, Object> exportDataToPdf(
+			@RequestBody QueryData queryData, HttpServletRequest request)
+			throws IOException {
+		HttpSession session = request.getSession();
+		queryData.setReporttype("pdf");
+		String bank = (String) session.getAttribute("bank");
+		return adminReportService.csvDownloadQueue(queryData, bank);
+	}
+	
+	
 	@RequestMapping(value = "/deleteview", method = RequestMethod.POST)
 	public String deleteViews(@ModelAttribute("checkedhisto") QueryData qrydata,HttpServletRequest request,RedirectAttributes redir){
 		boolean flag=false;
@@ -460,5 +521,13 @@ public class AdminReportController {
             List<String> retriveisCriteriaTables = adminReportService.retriveisCriteriaTables(bank);
             return retriveisCriteriaTables;
     }
+	//StaticReport
+	@RequestMapping(value = "/staticReport", method = RequestMethod.GET)
+	public ModelAndView staticReportPage(HttpServletRequest request,RedirectAttributes redir) {
+		ModelAndView  mv=new ModelAndView();
+		mv.setViewName("staticReport");
+		return mv;
+		
+	}
 	
 }

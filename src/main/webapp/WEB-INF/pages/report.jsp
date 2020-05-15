@@ -166,6 +166,14 @@ overflow: auto !important;
 .leftjoin,.rightjoin,.fulljoin {
 display: none;
 }
+#dwld:hover {
+    background-color: #F60 !important;
+    /* color:black !important; */
+}
+
+
+
+
 </style>
 </head>
 <body>
@@ -215,21 +223,26 @@ display: none;
 								<option value="<c:out value="${favouriteLists.table1}"></c:out>" selected="selected"><c:out value="${favouriteLists.table1}"></c:out></option>
 							</select>
 							<label style="float: left;">OnDate: 
-         				  <input placeholder="dd-mm-yyyy"  name="ondate" type="text" class="form_input half_width" id ="ondate" style="width:90px;" autocomplete="off" value="${favouriteLists.ondate}"/><span class="input-group-addondate"><span class="glyphicon glyphicon-calendar"></span></span></label>&nbsp;&nbsp;
-							<button id="tables" class="btn btn-info report-btn">
-								<i class="glyphicon glyphicon-file"></i>&nbsp;Get Tables
+         				  <input placeholder="dd-mm-yyyy"  name="ondate" type="text" class="form_input half_width" id ="ondate" style="width:90px;" autocomplete="off" value="${favouriteLists.ondate}"/><span class="input-group-addondate"><span class="fa fa-calendar"></span></span></label>&nbsp;&nbsp;
+							<button id="tables" class="btn btn-outline-info">
+								<i class="fa fa-file-text"></i>&nbsp;Get Tables
 							</button>
-							<button id="jointables" class="btn btn-success report-btn" data-toggle="collapse">
-                                <i class="glyphicon glyphicon-random"></i>&nbsp;&nbsp;Join Tables
+							<button id="jointables" class="btn btn-outline-success" data-toggle="collapse">
+                                <i class="fa fa-random"></i>&nbsp;&nbsp;Join Tables
                             </button>
-							<button style="display: none;" id="" class="favourite btn btn-success report-btn" data-toggle="modal" data-target="#saveFavourite">
-								<span class="glyphicon glyphicon-file"></span>&nbsp;Save
+							<button style="display: none;" id="" class="btn btn-outline-success favourite" data-toggle="modal" data-target="#saveFavourite">
+								<span class="fa fa-file-text"></span>&nbsp;Save
 							</button>
 
-							<button id="clear_btn_all" class="btn btn-warning report-btn">
-								<i class="glyphicon glyphicon-remove-sign"></i>&nbsp;Clear All
-         				    </button>
+							<button id="clear_btn_all" class="btn btn-outline-warning">
+								<i class="fa fa-remove"></i>&nbsp;Clear All
+         				    </button>&nbsp;&nbsp;
          				 
+         				<%--  <!-- Queue download page Button -->
+						 <a href="${pageContext.request.contextPath}/downloadreportPage"><button id="dwld" style="color:white;background-color:#666;margin-top:3px;" class="btn btn-success">
+						 <i class="	glyphicon glyphicon-save-file"></i>&nbsp;Go to Download
+						 </button>
+						 </a> --%>
          				  
                           <a class="file_action" href="#"> <input style="float: left; margin: 4px 4px 0 0; display:none" id="groupby" type="checkbox"><span><label style="cursor: pointer; display:none">Groups by</label></span></a>
 							<div class="clearfix"></div>
@@ -269,8 +282,8 @@ display: none;
 						<span id="joinTextArea_message"></span><br><br>
 					   <!-- click joinBtn to show popup-->
 						<div id="jf" style="">
-						<button type="button" class="btn btn-primary report-btn" data-toggle="modal"  id="joinBtn" ><i class="fa fa-filter"></i>&nbsp;Join Filter</button>
-						<button class="joinClear btn btn-warning report-btn"><i class="glyphicon glyphicon-remove-sign"></i>&nbsp;Clear</button>
+						<button type="button" class="btn btn-outline-primary report-btn" data-toggle="modal"  id="joinBtn" ><i class="fa fa-filter"></i>&nbsp;Join Filter</button>
+						<button class="joinClear btn btn-outline-warning report-btn"><i class="fa fa-remove"></i>&nbsp;Clear</button>
 						</div>
 					    </div>
 				 </div> 
@@ -280,7 +293,7 @@ display: none;
 					<!-- Modal popup for JOIN -->
 					<div class="modal animate" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="overflow-x: scroll">
 						<div class="modal-dialog" role="document">
-							<div class="modal-content" style="width:90%; height: 45%; border-radius: 15px; border-color: #777; box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);">
+							<div class="modal-content">
 								<div class="modal-header">
 									<h5 class="modal-title bold" id="exampleModalLabel" style="margin-top :-15px;"><i class="fa fa-filter"></i>Join Filter</h5>
 									<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#exampleModal').hide()" >
@@ -467,12 +480,13 @@ display: none;
 									</div>
 
 
-									<button class="btn btn-info report-btn addto">
-										<i class="glyphicon glyphicon-filter"></i>&nbsp;Add to Filter
+									<button class="btn btn-outline-info addto">
+										<i class="fa fa-filter"></i>&nbsp;Add to Filter
 									</button>
-									<button class="btn btn-info report-btn orto">
-										<i class="glyphicon glyphicon-filter"></i>&nbsp;Or to Filter
+									<button class="btn btn-outline-info orto">
+										<i class="fa fa-filter"></i>&nbsp;Or to Filter
 									</button>
+
 
 									<span id="errmsg"></span><br>
 
@@ -489,12 +503,12 @@ display: none;
 								<div>
 									<br>
 									 
-									<button class="btn btn-success report-btn submitCf" data-toggle="modal" data-target="#myModal" id="btn_transmit">
-										<i class="glyphicon glyphicon-share-alt"></i>&nbsp;Transmit
+									<button class="btn btn-outline-success submitCf"  data-toggle="modal" data-target="#myModal" id="btn_transmit">
+										<i class="fa fa-share-alt"></i>&nbsp;Transmit
 									</button>
 									<!-- btn-primary new_btn_style  -->
-									<button class="submitClear btn btn-warning report-btn">
-										<i class="glyphicon glyphicon-remove-sign"></i>&nbsp;Clear
+									<button class="submitClear btn btn-outline-warning">
+										<i class="fa fa-remove"></i>&nbsp;Clear
 									</button>&nbsp;&nbsp;&nbsp;
 									  <!-- is Required Criteria..!!! -->
 									 <span style="text-align:right; color:red;font-size:medium;font-family:Georgia;" id="Cmsg1"></span>
@@ -535,6 +549,13 @@ display: none;
 						<!-- </div> -->
 					</div>
 					<div class="col-md-12 m-t-10" >
+					<div id="queuedownloads" style="display:none">
+					    <button  class="btn btn-outline-success" id="xls_btn">XLSX</button>
+						<button  class="btn btn-outline-success" id="csvpipe_btn">CSVPIPE</button>
+						<button  class="btn btn-outline-success" id="pdf_btn">PDF</button>
+						<button class="btn btn-outline-success" id="csv_btn">CSV</button>
+					</div>&nbsp;
+					
 						<div class="row b-b b-l b-r b-t b-grey" style="background: #fff;overflow: auto;">
 							<div style="margin: 10px;">
 								 <div id="menu4">
@@ -725,7 +746,22 @@ display: none;
 
 			});
 			
-		
+			// queue sending...
+			$('#csv_btn').click(function(e) {
+				createCsv();
+			});
+
+			$('#csvpipe_btn').click(function(e) {
+				createCsvPipe();
+			});
+
+			$('#xls_btn').click(function(e) {
+				createXls();
+			});
+			
+			$('#pdf_btn').click(function(e) {
+				createPdf();
+			});
 		
 
 			$('#btn_transmit').click(function(e) {

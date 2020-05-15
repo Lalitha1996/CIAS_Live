@@ -36,6 +36,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 @Repository
 @Transactional
 public class CreatePdfDaoImpl extends PdfUtils implements CreatePdfDao {
+	
 	private static final Logger logger = Logger.getLogger(CreatePdfDaoImpl.class);
 
 	@Autowired
@@ -48,7 +49,8 @@ public class CreatePdfDaoImpl extends PdfUtils implements CreatePdfDao {
 		Session session = null;
 		Connection connection=null;
 		PreparedStatement prepareStatement=null;
-		Document document = new Document(PageSize.A4, 36, 36, 45, 72);
+		//Document document = new Document(PageSize.A4, 36, 36, 45, 72);
+		Document document = new Document(PageSize.A4);
 		session = cebiConstant.getCurrentSession(bank);
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -59,28 +61,25 @@ public class CreatePdfDaoImpl extends PdfUtils implements CreatePdfDao {
 		parameter = queryData.getParameter().trim().length() > 0 ? queryData.getParameter() : "";
 		criteria = queryData.getQuery().trim().length() > 0 ? queryData.getQuery() : "";
 		
-		if (queryData.getTable2()=="" || queryData.getTable2() == null) {
-
-			query = populateQuery(queryData, parameter, criteria);
-		} else {
-
-			query = populateJoinQuery(queryData, parameter, criteria);
-		}
+		query=queryData.getTable2().isEmpty()?populateQuery(queryData, parameter, criteria):populateJoinQuery(queryData, parameter, criteria);
+		
 		logger.info("Inside createJasperReport()::Query :: " + query);
 		try {
 			 connection = ((SessionImpl) session).connection();
 			 prepareStatement = (PreparedStatement) connection.prepareStatement(query);
 			 resultSet = prepareStatement.executeQuery();
-
  			String lstparam = parameter.substring(0, (parameter.length() - 1));
 			List<String> dbColumns = Arrays.asList(lstparam.split(","));
 			List<String> columnLables = Arrays.asList(columns.split(","));
-
+			
+			document=dbColumns.size() > 6?new Document(PageSize.A4.rotate()):document;
+			
 			pdfWriter = PdfWriter.getInstance(document, buffer);
 			MyFooter event = new MyFooter(bank);
 			pdfWriter.setPageEvent(event);
 			document.open();
-			document.add(addDateAndIdTable());
+			document.add(addBankAndTable(queryData,bank));
+			document.add(addDateAndId(queryData.getReportDataId()));
 			document.add(Chunk.NEWLINE);
 			PdfPTable headeTable = createDataTable(columnLables, dbColumns, resultSet);
 			document.add(headeTable);
@@ -117,6 +116,7 @@ public class CreatePdfDaoImpl extends PdfUtils implements CreatePdfDao {
 }
 
 class MyFooter extends PdfPageEventHelper {
+	
 	Font ffont = new Font(Font.FontFamily.UNDEFINED, 5, Font.ITALIC);
 	String bankName = null;
 

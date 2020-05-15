@@ -14,7 +14,6 @@ public class CreateCsvServiceImpl implements CreateCsvService {
 
 	@Override
 	public byte[] downloadCsv(QueryData queryData, String bank) {
-
 		return createCsvDao.downloadCsv(queryData, bank);
 	}
 
@@ -22,5 +21,16 @@ public class CreateCsvServiceImpl implements CreateCsvService {
 	public byte[] downloadCsvPipeSeperator(QueryData queryData, String bank) {
 		return createCsvDao.downloadCsvPipeSeperator(queryData, bank);
 	}
+	
+	////////////////////////RabbitMQ
+	@Override
+	public int csvDownloadQueue(QueryData queryData, String bank) {
+		return 0;
+	}
 
+	@Override
+	public int downloadCsv1(QueryData queryData, String bank) {
+		return 0;
+	}
+	
 }

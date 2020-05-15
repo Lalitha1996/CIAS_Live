@@ -698,6 +698,7 @@ function submitCf(e) {
 									  });
 						} else {
 							$('.favourite').show();
+							$('#queuedownloads').show();
 							//$( "#groupby" ).empty();
 							//$( "#groupby" ).prop( "checked", false );
 							CreateTableFromJSON(response,dtA,dtB);
@@ -1035,9 +1036,15 @@ function formatData() {
 	jsonObject["dateB"] = d2;
 	var json = JSON.stringify(jsonObject);
 	$('#column').val(columnNames);
+	// direct download id's
 	$("#pdf").val(json);
 	$("#excel").val(json);
 	$(".csv").val(json);
+	//queue download id's
+	$("#csv_btn").val(json);
+	$("#pdf_btn").val(json);
+	$("#xls_btn").val(json);
+	$("#csvpipe_btn").val(json);
 	return json;
 }
 
@@ -1159,34 +1166,7 @@ function CreateTableFromJSON(results,dtA,dtB) {
 	    divContainer.innerHTML = "";
 	    divContainer.appendChild(table);
 	}
-function createPdf() {
-	if ($('#table_select').val() && $('#drag').text()) {
-		var json = formatData();
-		$.ajax({
-			type : "POST",
-			url : 'createPdf',
-			data : json,
-			processData : false,
-			contentType : "application/json; charset=utf-8",
-			error : function(xhr, status, error) {
-				closeModal();
-			},
-			success : function(response) {
-				closeModal();
-			},
-			beforeSend : function() {
-				openModal();
-			},
-		});
-	} else {
-		if (!$('#table_select').val()) {
-			alert("please select the table");
-		} else if (!$('#drag').text()) {
-			alert("please select the column");
-		}
-	}
 
-}
 
 function saveByteArray(pdfName, byte) {
 	var blob = new Blob([ byte ], {
@@ -2280,6 +2260,137 @@ function compareData(e){
 	
 	
 }
+
+
+function createCsv() {
+	if ($('#table_select').val() && $('#drag').text()) {
+		var json = $('#csv_btn').val(); // val() assigned in formatData() function.
+	}
+	$.ajax({
+		type : "POST",
+		url : 'createCsvQueue',
+		data : json,
+		dataType : "json",
+		contentType : "application/json; charset=utf-8",
+		error : function(xhr, status, error) {
+			closeModal();
+		},
+		success : function(response) {
+			closeModal();
+			alert(response.msg);
+		},
+		beforeSend : function() {
+			openModal();
+		},
+	});
+}
+
+
+function createCsvPipe() {
+	if ($('#table_select').val() && $('#drag').text()) {
+		var json = $('#csvpipe_btn').val();
+	}
+	$.ajax({
+		type : "POST",
+		url : 'createPipeCsvQueue',
+		data : json,
+		dataType : "json",
+		contentType : "application/json; charset=utf-8",
+		error : function(xhr, status, error) {
+			closeModal();
+		},
+		success : function(response) {
+			closeModal();
+			 alert(response.msg);			
+		},
+		beforeSend : function() {
+			openModal();
+		},
+	});
+}
+
+
+function createXls(){
+	if ($('#table_select').val() && $('#drag').text()) {
+		var json = $('#xls_btn').val();
+	}
+	$.ajax({
+		type : "POST",
+		url : 'createXlsQueue',
+		data : json,
+		dataType : "json",
+		contentType : "application/json; charset=utf-8",
+		error : function(xhr, status, error) {
+			closeModal();
+		},
+		success : function(response) {
+			closeModal();
+			 alert(response.msg);			
+		},
+		beforeSend : function() {
+			openModal();
+		},
+	});
+}
+
+function createPdf() {
+	if ($('#table_select').val() && $('#drag').text()) {
+		var json = $('#xls_btn').val();
+		$.ajax({
+			type : "POST",
+			url : 'createPdfQueue',
+			data : json,
+			processData : false,
+			contentType : "application/json; charset=utf-8",
+			error : function(xhr, status, error) {
+				 closeModal();
+				 
+			},
+			success : function(response) {
+				closeModal();
+				alert(response.msg);
+			},
+			beforeSend : function() {
+				openModal();
+			},
+		});
+	} else {
+		if (!$('#table_select').val()) {
+			alert("please select the table");
+		} else if (!$('#drag').text()) {
+			alert("please select the column");
+		}
+	}
+
+}
+/*function createPdf() {
+	if ($('#table_select').val() && $('#drag').text()) {
+		var json = formatData();
+		$.ajax({
+			type : "POST",
+			url : 'createPdf',
+			data : json,
+			processData : false,
+			contentType : "application/json; charset=utf-8",
+			error : function(xhr, status, error) {
+				closeModal();
+			},
+			success : function(response) {
+				closeModal();
+			},
+			beforeSend : function() {
+				openModal();
+			},
+		});
+	} else {
+		if (!$('#table_select').val()) {
+			alert("please select the table");
+		} else if (!$('#drag').text()) {
+			alert("please select the column");
+		}
+	}
+
+}*/
 
 /*function onDateSet(){
 	 var date = new Date();

@@ -3,5 +3,5 @@ package com.cias.dao;
 import com.cias.entity.QueryData;
 
 public interface CreateExcelDao {
-	public byte[] downloadExcel(QueryData queryData,String bank);
+	public void downloadExcel(QueryData queryData,String bank,String filename);
 }
