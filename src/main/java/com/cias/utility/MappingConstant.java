@@ -18,7 +18,8 @@ public class MappingConstant {
 	 public static final String DOWNLOAD_CSV_PIPE="/createPipeCsv"; 
 	 public static final String DOWNLOAD_CSV_PIPE_QUEUE="/createPipeCsvQueue"; 
 	 public static final String DOWNLOAD_REPORT_PAGE = "/downloadreportPage";
-	 public static final String BANK_REPORT_LOCATION= "/home/ciasapp/MQReport";
+	 public static final String BANK_REPORT_LOCATION= "/home/ciasapp/MQReport/";
+	 public static final String EXCEL_TEMP_LOCATION= "/home/ciasapp/MQTempReport/";
 	 public static final String REPORTHISTORY = "/reporthistory";
 	 public static final String FAVOURITE="/favourite"; 
 	 public static final String SHOW_FAVOURITE_LIST="/showFavouriteList";
