@@ -50,8 +50,8 @@ public class DbConfiguration {
 		dataSource.setDriverClassName(env.getProperty(appName + ".driverClassName"));
 		dataSource.setUrl(env.getProperty(appName + ".databaseurl"));
 		dataSource.setUsername(env.getProperty(appName + ".username"));
-	    dataSource.setPassword(AES.decrypt(env.getProperty(appName + ".password")));
-		//dataSource.setPassword(env.getProperty(appName + ".password"));
+	    //dataSource.setPassword(AES.decrypt(env.getProperty(appName + ".password")));
+		dataSource.setPassword(env.getProperty(appName + ".password"));
 		return dataSource;
 	}
 

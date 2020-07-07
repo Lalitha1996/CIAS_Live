@@ -90,14 +90,23 @@ z-index:9999;
 		</h2>
 		<div>
 			<ul class="nav nav-tabs" id="myTab" role="tablist">
-				<li title="Grid view" class="active"><a data-toggle="tab" role="tab" href="#info1" class="btn btn-default tab-unselectable" style="background-color: rgba(255, 255, 255, 0.9); min-width: 0px"><img
+				<li title="Grid view" class="active"><a data-toggle="tab"
+					role="tab" href="#info1" class="btn btn-default tab-unselectable"
+					style="background-color: rgba(255, 255, 255, 0.9); min-width: 0px"><img
 						src="images/gridview.jfif" style="width: 30px; padding: 2px;" /></a></li>
-				<li class="infolist" title="List view"><a data-toggle="tab" role="tab" href="#branchinfo" class="btn btn-default tab-unselectable"
-					style="background-color: rgba(255, 255, 255, 0.9); min-width: 0px"><img src="images/listview.jfif" style="width: 30px; padding: 2px;" /></a></li>
-				<li title="delete views" style="padding-left: 195px"><button type="button" id="deleteAcc">
-						<img src="images/deleteicon.png" style="width: 24px; padding: 2px;" />
+				<li class="infolist" title="List view"><a data-toggle="tab"
+					role="tab" href="#branchinfo"
+					class="btn btn-default tab-unselectable"
+					style="background-color: rgba(255, 255, 255, 0.9); min-width: 0px"><img
+						src="images/listview.jfif" style="width: 30px; padding: 2px;" /></a></li>
+				<li title="delete views" style="padding-left: 195px"><button
+						type="button" id="deleteAcc">
+						<img src="images/deleteicon.png"
+							style="width: 24px; padding: 2px;" />
 					</button></li>
-				<input id="myInput" type="text" placeholder="Search.." style="float: right; width: 267px; padding-top: 1px; margin-bottom: 6px">
+				<li><input type="text" id="myInput" placeholder="Search.." autocomplete="off"
+					style="float: right; width: 267px; padding-top: 1px; margin-bottom: 6px;margin-left: 140px;" />
+				</li>
 			</ul>
 		</div>
 	</div>
@@ -283,16 +292,16 @@ z-index:9999;
 	<div class="modal fade animate" id="id02" role="dialog">
 		<div class="modal-dialog" id="mydrag">
 			<!-- Modal content-->
-			<div class="modal-content" style="padding:1px;">
+			<div class="modal-content">
 				<div class="modal-header" style="background-color:#000000b5;padding: 14px 3px 3px 8px;">
 					<h4 class="modal-title bold" style="color:#fff;margin-top:-12px;"> Delete </h4>
-					<button type="button" class="close" data-dismiss="modal" onclick="document.getElementById('id02').style.display='none'"style="font-size: 26px;opacity:1;margin-top:1%;color: #fdfdfdfa;">&times;</button>
+					<button type="button" class="close" data-dismiss="modal" onclick="document.getElementById('id02').style.display='none'"style="font-size: 26px;opacity:1;margin-top:-1.2%;color: #fdfdfdfa;">&times;</button>
 				</div>
 				<div class="modal-body" style="height: 40px;">
-					<p style="font-size:20px;padding-top:6%">Do you want to delete?</p>
+					<p style="font-size:20px;">Do you want to delete?</p>
 				</div>
 				<div class="modal-footer" style="height: 60px;">
-					<form:form method="post" action="deleteview" commandName="checkedhisto">
+					<form:form method="post" action="deleteview" commandName="checkedhisto" style="margin-top:-25px">
 					<form:hidden path="parameter" id="qtitlee" value="" />
 					<input type="submit" class="btn btn-danger btn-sm" id="deletebtn1" value="Delete" style="width: 24%;height: 100%;margin-left: 5px;" />&nbsp;&nbsp;&nbsp;
 					<input type="button" id="btn1" onclick="document.getElementById('id02').style.display='none'" class="btn btn-danger btn-sm" data-dismiss="modal" value="No" style="width: 25%;height: 100%;margin-right: 0px;"/>

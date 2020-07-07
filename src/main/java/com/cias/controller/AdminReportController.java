@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -80,6 +80,7 @@ public class AdminReportController {
 	@Autowired
 	AdminReportDao adminReportDao;
 	
+	@SuppressWarnings("null")
 	@GetMapping(value=MappingConstant.DEFAULT_PAGE)
 	//@RequestMapping(value = MappingConstant.DEFAULT_PAGE, method = RequestMethod.GET)
 	public ModelAndView loginPage(ModelAndView model, HttpServletRequest request,@ModelAttribute("INVALID_USER") String msg) {
@@ -304,9 +305,10 @@ public class AdminReportController {
 		return model;
 	}
 	
-	@RequestMapping(value = MappingConstant.GET_REPORT_DETAILS, method = RequestMethod.POST)
+	/*@RequestMapping(value = MappingConstant.GET_REPORT_DETAILS, method = RequestMethod.POST)
 	public ModelAndView getReportDetails(HttpServletRequest request) {
 		ModelAndView model = new ModelAndView();
+		@SuppressWarnings("unused")
 		QueryData data=new QueryData();
 		//model.addObject("checkedhisto", data);
 		model.setViewName("report");
@@ -318,7 +320,39 @@ public class AdminReportController {
 			model.addObject("nocontent", "No Content..!");
 		return model;
 
-	}
+	}*/
+	
+	@RequestMapping(value = MappingConstant.GET_REPORT_DETAILS, method = RequestMethod.POST)
+    public ModelAndView getReportDetails(HttpServletRequest request,Model mdl) {
+            ModelAndView model = new ModelAndView();
+            @SuppressWarnings("unused")
+            QueryData data=new QueryData();
+            //model.addObject("checkedhisto", data);
+            model.setViewName("report");
+            int id = Integer.parseInt(request.getParameter("id"));
+            List<QueryData> list = adminReportDao.getReportDetails(id);
+            QueryData queryData = list.get(0);
+            if(!queryData.getTable2().isEmpty()){
+            	String[] split = queryData.getTable2().split(",");
+                String[] split2 = queryData.getTbname2().split(",");
+                LinkedHashMap<String, String> hmap = new LinkedHashMap<String, String>();
+                for (int i = 0; i < split2.length; i++) {
+                        hmap.put(split[i],split2[i]);
+                }	
+                mdl.addAttribute("map",hmap);
+            }
+              
+            if (list != null && !list.isEmpty()){
+                    model.addObject("favouriteLists", list.get(0));
+            }
+            else{
+                     model.addObject("nocontent", "No Content..!");
+            }
+                    
+            return model;
+
+    }
+	
 	
 	@RequestMapping(value = MappingConstant.HELP, method = RequestMethod.GET)
 	public ModelAndView faqQuestions(HttpServletRequest request,RedirectAttributes redir) {

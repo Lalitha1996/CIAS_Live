@@ -18,10 +18,10 @@ public class RabbitMqConfiguration {
 	@Bean 
 	public CachingConnectionFactory connectionFactory() {
 		CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
-		connectionFactory.setHost("10.43.1.108");
+		connectionFactory.setHost("localhost");
 		connectionFactory.setPort(5672);
-		connectionFactory.setUsername("cedgeMQ");
-		connectionFactory.setPassword("Cedge@123");
+		//connectionFactory.setUsername("cedgeMQ");
+		//connectionFactory.setPassword("Cedge@123");
 		//connectionFactory.setConnectionCacheSize(25);
 		//connectionFactory.setChannelCacheSize(25);
 		return connectionFactory;

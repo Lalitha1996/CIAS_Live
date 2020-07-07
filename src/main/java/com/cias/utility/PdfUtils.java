@@ -98,23 +98,27 @@ public class PdfUtils {
 		return sql;
 	}
 
-	public String populateJoinQuery(QueryData table, String parameter, String criteria){
+	//Join Table
+public String populateJoinQuery(QueryData table, String parameter, String criteria) {
+		
+		
 		if(table.getOndate()!=""){
 			try{
 		    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 		    DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             String date = LocalDate.parse(table.getOndate(), formatter).format(formatter2);
             table.setOndate(date);
-		   }catch(Exception e){
-			logger.info(e.getMessage());
-		 }
-		
+			}catch(Exception e){
+				logger.info(e.getMessage());
+			}
 		if(criteria.trim().length()>0){
 			criteria = criteria + " AND "+table.getTable1()+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+table.getTable2()+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
 			}else if (criteria.trim().length()==0 && table.getOndate().trim().length()>0){
 				
-				criteria = table.getTable1()+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+table.getTable2()+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
+				criteria = table.getTable1()+".RUN_DATE="+"'"+table.getOndate()+"'";
 			}}
+		
+		
 		String sql = "SELECT";
 		String parameterS = "  ";
 		if (parameter.trim().length() > 0) {
@@ -122,47 +126,151 @@ public class PdfUtils {
 		} else {
 			parameterS += " * ";
 		}
-		    String join = table.getJoinFilter();
-		    String joinType = table.getJoinType();
-		    String[] joinConsplit = join.substring(0, join.length() - 1).equals(",")?join.substring(0, join.length() - 1).split(","):join.split(",");
-		    String[] Table2split = table.getTable2().split(",");
-		
-			 if(Table2split.length>0 && joinConsplit.length>0){
+		   String join = table.getJoinFilter();
+		   String[] joinConsplit = join.substring(0, join.length() - 1).equals(",")?join.substring(0, join.length() - 1).split(","):join.split(",");
+		   String[] Table2split = table.getTable2().split(",");
+		   String joinType = table.getJoinType();
+		 
+			    if( joinConsplit.length>0 && Table2split.length>0){
+				
+				  if(criteria.trim().length() > 0 && (parameter.contains("(")&& parameter.contains(")")) || (criteria.trim().length() > 0 )) {
+					 
+					 if (criteria.trim().length() > 0 && parameter.contains("(") && parameter.contains(")")) {
+						 
+						//sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+table.getTable2()+ " ON " + join.trim()+" "+CebiConstant.QRY_WHERE + criteria;
+						 
+						 switch (Table2split.length) {
+					      case 1:
+					          sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+					          + CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
+					        break;
+					      case 2:
+						      sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+					          +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'";
+					        break;
+					      case 3:
+					    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+							 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+					    	 +" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'";
+					        break;
+					      case 4:
+						    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+								 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
+								 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"
+								 +" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[3]+".RUN_DATE="+"'"+table.getOndate()+"'";
+						        break;
+					      case 5:
+						    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+								 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
+								 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+joinType+" "+Table2split[4]+" "+"ON"+" "+joinConsplit[4].trim()+" "+CebiConstant.QRY_WHERE + criteria
+								 +" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[3]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[4]+".RUN_DATE="+"'"+table.getOndate()+"'";
+						        break;
+					    }
+							
+						} else  {
+							
+							//sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+table.getTable2()+ " ON " + join.trim()+" "+CebiConstant.QRY_WHERE + criteria+" "+CebiConstant.FETCH100;
+						
+							 switch (Table2split.length) {
+						      case 1:
+						          sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+						          + CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
+						        break;
+						      case 2:
+							      sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+						          +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+							    		  +" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
+						        break;
+						      case 3:
+						    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+								 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+						    	+" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
+						        break;
+						      case 4:
+							    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+									 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
+									 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+									 +" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[3]+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
+							        break;
+						      case 5:
+							    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+									 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
+									 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+joinType+" "+Table2split[4]+" "+"ON"+" "+joinConsplit[4].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+									 +" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[3]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[4]+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
+							        break;
+						    }
+						
+						}
+					 
+				} else if(parameter.contains("(")&& parameter.contains(")")) {
 				 
-				 String whereCriteria = criteria.trim().length() > 0 || criteria!="" ? " "+CebiConstant.QRY_WHERE + criteria:"";
-				 
-				 switch (Table2split.length) {
-			      case 1:
-			    	  sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0]+" "+whereCriteria;
-			        break;
-			      case 2:
-			    	  sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0]+" "+
-			          joinType+" "+Table2split[1]+ " ON " + joinConsplit[1]+" "+whereCriteria;
-			        break;
-			      case 3:
-			    	  sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0]+" "+
-					  joinType+" "+Table2split[1]+ " ON " + joinConsplit[1]+" "+joinType+" "+Table2split[2]+ " ON " + joinConsplit[2]+" "+whereCriteria;
-			        break;
-			      case 4:
-			    	  sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0]+" "+
-					  joinType+" "+Table2split[1]+ " ON " + joinConsplit[1]+" "+joinType+" "+Table2split[2]+ " ON " + joinConsplit[2]+" "+
-					  joinType+" "+Table2split[3]+ " ON " + joinConsplit[3]+" "+whereCriteria;
-			        break;
-			      case 5:
-			    	  sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0]+" "+
-					  joinType+" "+Table2split[1]+ " ON " + joinConsplit[1]+" "+joinType+" "+Table2split[2]+ " ON " + joinConsplit[2]+" "+
-					  joinType+" "+Table2split[3]+ " ON " + joinConsplit[3]+" "+joinType+" "+Table2split[4]+ " ON " + joinConsplit[4]+" "+whereCriteria;
-			        break;
-			    }
-				 
+					//sql = sql + parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+table.getTable2()+ " ON " + join.trim()+ " ";
+					
+					 switch (Table2split.length) {
+				      case 1:
+				          sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" ";
+				          
+				        break;
+				      case 2:
+					      sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+				          +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" ";
+				        break;
+				      case 3:
+				    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+						 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" ";
+				        break;
+				      case 4:
+					    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+							 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
+							 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" ";
+					        break;
+				      case 5:
+					    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+							 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
+							 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+joinType+" "+Table2split[4]+" "+"ON"+" "+joinConsplit[4].trim()+" ";
+					        break;
+				    }
+					
+				
+				}else {
+					
+					//sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() + " "+ joinType+" "+table.getTable2()+ " ON " + join.trim()+" "+CebiConstant.FETCH100;
+					
+					
+					switch (Table2split.length) {
+				      case 1:
+				          sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" ";
+				          
+				        break;
+				      case 2:
+					      sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+				          +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" ";
+				        break;
+				      case 3:
+				    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+						 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" ";
+				        break;
+				      case 4:
+					    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+							 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
+							 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" ";
+					        break;
+				      case 5:
+					    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
+							 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
+							 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+joinType+" "+Table2split[4]+" "+"ON"+" "+joinConsplit[4].trim()+" ";
+					        break;
+				    }
+				}
 			}
 
 		 if (table.getGroupby() != null && table.getGroupby().trim().length() > 0) {
 				String groups = table.getGroupby().substring(0, (table.getGroupby().length() - 1));
-				sql = sql + " GROUP BY " + groups ;
+				sql = sql + "GROUP BY " + groups ;
 			}
 		return sql;
 	}
+	
 	
 	
 	public PdfPCell getTableHeadingCell(String text, int alignment, int size) {
@@ -225,13 +333,14 @@ public class PdfUtils {
 	}
 
 	public String getTableNames(QueryData getTabledata) {
+		// alimoulaa
 		 List<ApplicationLabel> lables=applicationLabelDao.retrieveAllLabels();
 		 StringBuilder tableName = new StringBuilder();
 
 		if (getTabledata.getTable1() != "" || !getTabledata.getTable1().isEmpty()) {
 			for (ApplicationLabel lable : lables) {
 				if (lable.getLabelCode().trim().equalsIgnoreCase(getTabledata.getTable1().trim())) {
-					tableName.append(lable.getAppLabel().trim());
+					tableName.append(lable.getAppLabel().replaceAll("\\s+", ""));
 					break;
 				}
 			}
@@ -241,13 +350,13 @@ public class PdfUtils {
 			for (String table : tables) {
 				for (ApplicationLabel lable : lables) {
 					if (lable.getLabelCode().trim().equalsIgnoreCase(table.trim())) {
-						tableName.append(",").append(lable.getAppLabel().trim());
+						tableName.append(" ").append(lable.getAppLabel().replaceAll("\\s+", ""));
 						break;
 					}
 				}
 			}
 		}
-		return tableName.toString();
+		return tableName.toString();  
 	}
 
 

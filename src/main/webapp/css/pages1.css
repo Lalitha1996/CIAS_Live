@@ -2520,7 +2520,7 @@ html {
     -moz-font-feature-settings: "kern" 1;
 }
  */
-h1,
+/* h1,
 h2,
 h3,
 h4,
@@ -2534,7 +2534,7 @@ h6 {
     font-weight: 300;
     color: #2c2c2c;
 }
-
+ */
 h1 {
     font-size: 44px;
     line-height: 55px;
@@ -2551,11 +2551,11 @@ h3 {
     line-height: 35px;
 }
 
-h4 {
+/* h4 {
     font-size: 22px;
     line-height: 31.88px;
 }
-
+ */
 h5 {
     font-size: 18px;
     line-height: 25.88px;
@@ -5267,21 +5267,21 @@ body>.pgn-wrapper {
     color: #8b91a0;
 }
 
-.modal .modal-body {
+/* .modal .modal-body {
     box-shadow: none;
     padding: 25px;
     padding-top: 22px;
     white-space: normal;
-}
+} */
 
-.modal .modal-footer {
+/* .modal .modal-footer {
     border-top: none;
     box-shadow: none;
     margin-top: 0;
     padding: 25px;
     padding-top: 3px;
 }
-
+ */
 .modal .drop-shadow {
     box-shadow: 0 0 9px rgba(191, 191, 191, 0.36)!important;
 }

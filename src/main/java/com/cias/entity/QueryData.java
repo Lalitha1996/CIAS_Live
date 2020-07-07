@@ -91,6 +91,13 @@ public class QueryData implements Serializable {
 	@Transient
 	private int reportDataId;
 	
+	
+	@Column(name="tbname1")
+	private String tbname1;
+	
+	@Column(name="tbname2")
+	private String tbname2;
+	
 	public String getTimeAdd() {
 		return timeAdd;
 	}
@@ -269,5 +276,20 @@ public class QueryData implements Serializable {
 		this.reportDataId = reportDataId;
 	}
 
+	public String getTbname1() {
+		return tbname1;
+	}
+
+	public void setTbname1(String tbname1) {
+		this.tbname1 = tbname1;
+	}
+
+	public String getTbname2() {
+		return tbname2;
+	}
+
+	public void setTbname2(String tbname2) {
+		this.tbname2 = tbname2;
+	}
 
 }

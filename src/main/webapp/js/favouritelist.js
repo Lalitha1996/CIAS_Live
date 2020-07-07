@@ -1,4 +1,3 @@
-
 function retriveColumns() {
 		columnbox();
 		if($('#table_select').val()){
@@ -158,8 +157,9 @@ function callRetriveJoinColumnsFun(){
 	$("input[name='joincheck']:checkbox").each(function() {
 		if ($(this).is(":checked")){
 		    table = $(this).val();
+		    tabletext = $(this).next('label').text().trim();
 			tableList.push($(this).val());
-			retriveJoinColumns(table,tableList);
+			retriveJoinColumns(table,tabletext,tableList);
 		}
 	});
 	
@@ -173,39 +173,39 @@ function callRetriveJoinColumnsFun(){
 }
 
 
-function retriveJoinColumns(table,tableList) {
+function retriveJoinColumns(table,tabletext,tableList) {
 	if(tableList.length>0){
 			
 		var columnjoin,filterjoin,pri,pri2,uniqCol,dragCon;
 			
 		if (tableList.length==1) {
 			$("#table_btn_join1").show();
-			$("#table_btn_join1").val(table+ "(Fields)");
-			uniqCol = table.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
+			$("#table_btn_join1").val(tabletext+ "(Fields)");
+			uniqCol = tabletext.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
 			columnjoin = "columnsJoin1",filterjoin = "filterjoin1",pri="priId1",pri2="pri2Id1",dragCon="a";
 		}
 		if (tableList.length==2) {
 			$("#table_btn_join2").show();
-			$("#table_btn_join2").val(table+ "(Fields)");
-			uniqCol = table.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
+			$("#table_btn_join2").val(tabletext+ "(Fields)");
+			uniqCol = tabletext.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
 			columnjoin = "columnsJoin2",filterjoin = "filterjoin2",pri="priId2",pri2="pri2Id2",dragCon="b";
 		}	
 		if (tableList.length==3) {
 			$("#table_btn_join3").show();
-			$("#table_btn_join3").val(table+ "(Fields)");
-			uniqCol = table.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
+			$("#table_btn_join3").val(tabletext+ "(Fields)");
+			uniqCol = tabletext.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
 			columnjoin = "columnsJoin3",filterjoin = "filterjoin3",pri="priId3",pri2="pri2Id3",dragCon="c";
 		}
 		if (tableList.length==4) {
 			$("#table_btn_join4").show();
-			$("#table_btn_join4").val(table+ "(Fields)");
-			uniqCol = table.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
+			$("#table_btn_join4").val(tabletext+ "(Fields)");
+			uniqCol = tabletext.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
 			columnjoin = "columnsJoin4",filterjoin = "filterjoin4",pri="priId4",pri2="pri2Id4",dragCon="d";
 		}
 		if (tableList.length==5) {
 			$("#table_btn_join5").show();
-			$("#table_btn_join5").val(table+ "(Fields)");
-			uniqCol = table.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
+			$("#table_btn_join5").val(tabletext+ "(Fields)");
+			uniqCol = tabletext.match(/\b(\w)/g).join(''); // [get First letter from each word to attach on cloumns]
 			columnjoin = "columnsJoin2",filterjoin = "filterjoin5",pri="priId5",pri2="pri2Id5",dragCon="e";
 		}
 			

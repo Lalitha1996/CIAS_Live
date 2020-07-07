@@ -1,10 +1,6 @@
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<title>Report Page</title>
 <%@ page import = "java.util.*, javax.servlet.*" %>
-<!DOCTYPE html>
-<html>
-<head>
-<%@ include file="header.jsp"%>
+<%@ include file="/WEB-INF/pages/header.jsp"%>
 <link rel="stylesheet" href="css/style.css"> 
 <style type="text/css">
 .select2-results li {
@@ -170,13 +166,8 @@ display: none;
     background-color: #F60 !important;
     /* color:black !important; */
 }
-
-
-
-
 </style>
-</head>
-<body>
+</div>
 	<div id="mySidenav" class="sidenav" style="border-right: 1px solid #ccc;">
 		<input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for names.." title="Type in a name"> <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"
 			style="line-height: 1;">&times;</a>
@@ -216,11 +207,11 @@ display: none;
 					<div class="col-md-12">
 						<div class="col-md-12 no-padding">
 							<label class="pull-left fs-14" style="margin: 5px 15px 0 0;">Table Name</label> 
-							<select id="table_select" data-init-plugin="select2" class="form_input pull-left half_width makingnull" style="width: 25%; cursor: pointer; margin-right: 15px; height: 28px;">
+					         <select id="table_select" data-init-plugin="select2" class="form_input pull-left half_width makingnull" style="width: 25%; cursor: pointer; margin-right: 15px; height: 28px;">
 								 <c:forEach items="${tables}" var="table">
 									<option value="<c:out value="${table.tableName}"></c:out>"><c:out value="${table.name}"></c:out></option>
 								</c:forEach>
-								<option value="<c:out value="${favouriteLists.table1}"></c:out>" selected="selected"><c:out value="${favouriteLists.table1}"></c:out></option>
+								<option value="<c:out value="${favouriteLists.table1}"></c:out>" selected="selected"><c:out value="${favouriteLists.tbname1}"></c:out></option>
 							</select>
 							<label style="float: left;">OnDate: 
          				  <input placeholder="dd-mm-yyyy"  name="ondate" type="text" class="form_input half_width" id ="ondate" style="width:90px;" autocomplete="off" value="${favouriteLists.ondate}"/><span class="input-group-addondate"><span class="fa fa-calendar"></span></span></label>&nbsp;&nbsp;
@@ -230,20 +221,13 @@ display: none;
 							<button id="jointables" class="btn btn-outline-success" data-toggle="collapse">
                                 <i class="fa fa-random"></i>&nbsp;&nbsp;Join Tables
                             </button>
-							<button style="display: none;" id="" class="btn btn-outline-success favourite" data-toggle="modal" data-target="#saveFavourite">
+							<button style="display: none;" id="SaveQuery" class="btn btn-outline-success favourite" data-toggle="modal">
 								<span class="fa fa-file-text"></span>&nbsp;Save
 							</button>
 
 							<button id="clear_btn_all" class="btn btn-outline-warning">
 								<i class="fa fa-remove"></i>&nbsp;Clear All
-         				    </button>&nbsp;&nbsp;
-         				 
-         				<%--  <!-- Queue download page Button -->
-						 <a href="${pageContext.request.contextPath}/downloadreportPage"><button id="dwld" style="color:white;background-color:#666;margin-top:3px;" class="btn btn-success">
-						 <i class="	glyphicon glyphicon-save-file"></i>&nbsp;Go to Download
-						 </button>
-						 </a> --%>
-         				  
+         				    </button>&nbsp;&nbsp;       				  
                           <a class="file_action" href="#"> <input style="float: left; margin: 4px 4px 0 0; display:none" id="groupby" type="checkbox"><span><label style="cursor: pointer; display:none">Groups by</label></span></a>
 							<div class="clearfix"></div>
 							<span id="message"></span>
@@ -263,14 +247,21 @@ display: none;
 									<br>
 								</li>
 							</c:forEach>
-							
-							  <c:forTokens var="table" items="${favouriteLists.table2}" delims=",">
+
+								<c:forEach items="${map}" var="entry">
+									<li>
+									<input type="checkbox" value="${entry.key}" name="joincheck" id="checkjoin" class="checkjoincls" style="float: center" checked="true">&nbsp; 
+									<label for="joincheck"><c:out value="${entry.value}"></c:out></label>
+									</li>
+								</c:forEach>
+
+								<%--  <c:forTokens var="table" items="${favouriteLists.table2}" delims=",">
                                  <li>
 									<input type="checkbox" value="${table}" name="joincheck" id="checkjoin" class="checkjoincls" style="float: center" checked="true">&nbsp;
 									<label for="joincheck"><c:out value="${table}"></c:out></label>
 									<br>
 								</li>
-							 </c:forTokens>
+							 </c:forTokens> --%>
 							</ul>
                             </div> 
                           
@@ -282,16 +273,17 @@ display: none;
 						<span id="joinTextArea_message"></span><br><br>
 					   <!-- click joinBtn to show popup-->
 						<div id="jf" style="">
-						<button type="button" class="btn btn-outline-primary report-btn" data-toggle="modal"  id="joinBtn" ><i class="fa fa-filter"></i>&nbsp;Join Filter</button>
+						<button type="button" class="btn btn-outline-primary report-btn" data-display="static" data-toggle="modal" id="joinBtn" ><i class="fa fa-filter"></i>&nbsp;Join Filter</button>
 						<button class="joinClear btn btn-outline-warning report-btn"><i class="fa fa-remove"></i>&nbsp;Clear</button>
 						</div>
 					    </div>
 				 </div> 
 				 </div>
                 <span id="join_message" style="color:red;font-size:medium;font-family:Georgia;"></span> <!-- join table select alert -->
+                
+			<!-- ////////////////////////////******Modal popup for JOIN******//////////////////////////  -->
 
-					<!-- Modal popup for JOIN -->
-					<div class="modal animate" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="overflow-x: scroll">
+					<div class="modal" id="exampleModal"  tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="overflow-x: scroll">
 						<div class="modal-dialog" role="document">
 							<div class="modal-content">
 								<div class="modal-header">
@@ -303,10 +295,6 @@ display: none;
 								<div class="border">
 								 <div class="modal-body">
 											<div class="col-xs-4" id="join">
-											<!-- <select id ="logicalC" class="form_input pull-left half_width" style="width:52%;margin-top: -9px;">
-											<option value="AND">AND</option>
-											<option value="OR">OR</option>
-											</select> -->	
 										    <label class="pull-left fs-14" style="margin: 15px 15px 0 0;" id="pt1">All Table Keys</label><br> 
 											<select class="form-control" id="pri">
 													<option value=""></option>
@@ -315,21 +303,10 @@ display: none;
 											<option value="AND">AND</option>
 											<option value="OR">OR</option>
 											</select>
-											
 											<label class="pull-left fs-14" style="margin: 2px 15px 0 0;" id="pt2">All Table Keys</label><br> 
 											<select class="form-control" id="pri2">
 													<option value=""></option>
 											</select><br>
-											<!-- <select id ="logicalB" class="form_input pull-left half_width" style="width:52%;margin-top: -10px;">
-											<option value="AND">AND</option>
-											<option value="OR">OR</option>
-											</select><br> -->
-											
-											<!-- <label class="pull-left fs-14" style="margin: -6px 15px 0 0;" id="st1">SFieldName</label><br> 
-											<select class="form-control" id="sec2" style="margin-top: -10px;">
-													<option value=""></option>
-										    </select> -->
-											
 											</div>
 											<div class="col-xs-4">
 											<label class="pull-left fs-14" style="margin: 15px 15px 0 0;">Condition</label><br> 
@@ -344,15 +321,6 @@ display: none;
 													<option value=">=">>=</option>
 													<option value="<="><=</option>
 											</select><br> 
-											
-											<%-- <label class="pull-left fs-14" style="margin: 15px 15px 0 0;">Condition</label><br>
-											<select class="form-control" id="conS">
-													<option value="=">=</option>
-													<option value=">">></option>
-													<option value="<"><</option>
-													<option value=">=">>=</option>
-													<option value="<="><=</option>
-											</select><br> --%>
 											</div>
 											<div class="col-xs-4">
 											<label class="pull-left fs-14" style="margin: 15px 15px 0 0;" id="st2">Join Table Keys</label><br> 
@@ -392,8 +360,11 @@ display: none;
 							</div>
 						</div>
 					</div>
+					
+			<!-- ////////////////////////////******Modal popup for JOIN Ended******//////////////////////////  -->
 
 					<div class="clearfix"></div>
+					<br>
 						<div style="display: none;" id='table_field' class="drag_drop_div">
 							<label class="field_head">Select Reports Fields</label>&nbsp;&nbsp;<span class="fs-12">(Please click on field)</span>
 							<div class="clearfix"></div>
@@ -591,22 +562,22 @@ display: none;
 		<img id="loader" style="width: 150px;" src="images/Spinner.gif" />
 	</div>
 
-	<!-- -----------------------Add To Favourite popup-----------------------------------style="overflow: hidden" -->
+	<!-- ////////////////////////////******Add To Favourite popup******//////////////////////////----style="overflow: hidden" -->
 
 	<!-- Modal -->
-	<div class="modal animate" id="saveFavourite" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="overflow: hidden">
+	<div class="modal" id="saveFavourite" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="overflow: hidden">
 		<div class="modal-dialog">
 			<div class="modal-content animate">
 				<!-- Modal Header -->
 				<div class="modal-header" style="background-color:#000000b5;padding: 12px 6px 3px 8px;">
-					<button type="button" class="close" onclick="document.getElementById('saveFavourite').style.display='none'" style="font-size: 26px;opacity:1;margin-top:3%;color: #fdfdfdfa;">
+					<button type="button" class="close" onclick="document.getElementById('saveFavourite').style.display='none'" style="font-size: 26px;opacity:1;margin-top:0%;color: #fdfdfdfa;">
 						<span aria-hidden="true">&times;</span> <span class="sr-only">Close</span>
 					</button>
 					<h4 class="modal-title" id="myModalLabel" style="color: #fff;"><i class="fa fa-star"></i>&nbsp;Add Favourite Details</h4>
 				</div>
 
 				<!-- Modal Body -->
-					<div class="modal-body" style="padding-left: 0%; height: 320px;">
+					<div class="modal-body" style="padding-left: 6%; height: 370px;margin-top: -20px;">
 
 						<form id="formdata" role="form">
 							<div class="form-group ">
@@ -637,10 +608,7 @@ display: none;
 		</div>
 
 	</div>
-
-	<%@ include file="/WEB-INF/pages/Footer.jsp"%>
-	<!-- -------------------------------Add To Favourite popup End---------------------------- -->
-
+	<!-- ////////////////////////////******Add To Favourite popup Ended******//////////////////////////  -->
 
 	<script>
 		function myFunction() {
@@ -709,283 +677,398 @@ display: none;
 			localStorage.removeItem("dbColumns");
 			localStorage.removeItem("JoindbColumns");
 			retriveColumns();
-		    
-			  //retriveJoinColumns();
-			  //onDateSet();
 		});
 
 		$(document).ready(function() {
-			$(function() {
-				$("#date1").datepicker({
-					dateFormat : 'yy-mm-dd'
-				});
-				$("#date2").datepicker({
-					dateFormat : 'yy-mm-dd'
-				});
-				$("#table_select").select2();
-				$("#fromdate").datepicker({
-					dateFormat : 'yy-mm-dd'
-				});
-				
-				$("#table_select2").select2();
-				$("#fromdate").datepicker({
-					dateFormat : 'yy-mm-dd'
-				});
-				$("#todate").datepicker({
-					dateFormat : 'yy-mm-dd'
-				});
-				$("#iptextdate").datepicker({
-					dateFormat : 'yy-mm-dd'
-				});
-				
-				 $('#ondate').click(function(e) {
-						$("#ondate").datepicker({
-							dateFormat : 'dd-mm-yy'
+							$(function() {
+								$("#date1").datepicker({
+									dateFormat : 'yy-mm-dd'
+								});
+								$("#date2").datepicker({
+									dateFormat : 'yy-mm-dd'
+								});
+								$("#table_select").select2();
+								$("#fromdate").datepicker({
+									dateFormat : 'yy-mm-dd'
+								});
+
+								$("#table_select2").select2();
+								$("#fromdate").datepicker({
+									dateFormat : 'yy-mm-dd'
+								});
+								$("#todate").datepicker({
+									dateFormat : 'yy-mm-dd'
+								});
+								$("#iptextdate").datepicker({
+									dateFormat : 'yy-mm-dd'
+								});
+
+								$('#ondate').click(function(e) {
+									$("#ondate").datepicker({
+										dateFormat : 'dd-mm-yy'
+									});
+								});
+
+							});
+
+							// queue sending...
+							$('#csv_btn').click(function(e) {
+								createCsv();
+							});
+
+							$('#csvpipe_btn').click(function(e) {
+								createCsvPipe();
+							});
+
+							$('#xls_btn').click(function(e) {
+								createXls();
+							});
+
+							$('#pdf_btn').click(function(e) {
+								createPdf();
+							});
+
+							$('#btn_transmit').click(function(e) {
+								submitCf(e);
+
+							});
+
+							$('#compareDate').click(function(e) {
+								compareData(e);
+							});
+
+							$(".addto").on("click", function() {
+								addToFilter();
+							});
+
+							$(".orto").on("click", function() {
+								addORToFilter();
+							});
+							$('.submitClear').click(function(e) {document.getElementById("criteriaTextArea").innerHTML = "";});
+							$('.joinClear').click(function(e) {document.getElementById("joinTextArea").innerHTML = "";});
+							$('#s1').change(function(e) {
+								validateSelectedValue();
+							});
+							$('#sj').change(function(e) {
+								validateSelectedValue();
+							});
+							$('#sj').click(function(e) {
+												if ($('#s1').val() != "") {
+													alert("please select only one field at a time...!!!");
+													return false;
+												}
+											});
+							$('#s1').click(function(e) {
+												if ($('#sj').val() != "") {
+													alert("please select only one field at a time...!!!");
+													return false;
+												}
+											});
+							$('#tables').click(function(e) {
+								callMetaDataTable();
+							});
+
+							$('#table_select').change(function(e) {
+								retriveColumnAjaxCall();
+							});
+
+							$('#table_select2').change(function(e) {
+								retriveJoinColumnAjaxCall();
+							});
+
+							$('#clear_btn_all').click(function(e) {
+								clearAllFields();
+							});
+							$('#s2').click(function(e) {
+								addBetweenFilter();
+							});
+							$('#groupby').click(function(e) {
+								groupBy(e);
+							});
+							$('#favouriteForm').click(function(e) {
+								saveFavouriteQuery(e);
+							});
+							$("#joinType").click(function(e) {
+								JoinDescription(e);
+							});
+							$('#jointables').click(function(e) {
+												if ($("#ondate").val().trim()) {
+													if ($("#table_select").val()) {
+														$("#multiJoinTablediv").slideToggle();
+														$("#filterJoinLabel").slideToggle();
+														$("#sj").slideToggle();
+													} else {
+														alert("Primary Table is Required to Join..!!");
+													}
+												} else {
+													alert("Please select ondate..!");
+												}
+
+											});
+
+							$('#joinBtn')
+									.click(
+											function(e) {
+
+												$("#join_message").html("");
+												$("#joinTextArea").removeClass(
+														"table_select_error");
+
+												if ($("#table_btn_join1").val() != ""
+														|| $("#table_btn_join2")
+																.val() != ""
+														|| $("#table_btn_join3")
+																.val() != ""
+														|| $("#table_btn_join4")
+																.val() != ""
+														|| $("#table_btn_join5")
+																.val() != "") {
+
+													$("#exampleModal").show();
+
+												} else {
+													$("#join_message")
+															.html(
+																	"Please select join table..!!");
+												}
+											});
+
+							$('#addJoin').click(function(e) {
+								addJoinfilter(e);
+							});
 						});
-					});
 
-			});
-			
-			// queue sending...
-			$('#csv_btn').click(function(e) {
-				createCsv();
-			});
+		$(document)
+				.ready(
+						function() {
 
-			$('#csvpipe_btn').click(function(e) {
-				createCsvPipe();
-			});
+							$("#table_select").change(function() {
+								baseTableSelectOperation();
+							});
 
-			$('#xls_btn').click(function(e) {
-				createXls();
-			});
-			
-			$('#pdf_btn').click(function(e) {
-				createPdf();
-			});
-		
+							// not using this function replaced by below function
+							$("#table_select2")
+									.change(
+											function() {
+												$("#table_btn").show();
 
-			$('#btn_transmit').click(function(e) {
-				submitCf(e);
+												if ($("#table_select2").val()) {
+													$("#table_btn_join").show();
+													var btn = $(
+															"#table_select2 option:selected")
+															.text();
+													$("#table_btn_join")
+															.val(
+																	btn.trim()
+																			+ "(Fields)");
+												} else {
+													$("#columnsJoin").empty();
+													var btn = $(
+															"#table_select2 option:selected")
+															.text();
+													$("#table_btn_join").val(
+															btn.trim());
 
-			});
+													$('a', $('#drag'))
+															.each(
+																	function() {
+																		if ($(
+																				this)
+																				.text()
+																				.includes(
+																						"(S)")) {
+																			$(
+																					this)
+																					.remove();
+																		}
+																	});
 
-			$('#compareDate').click(function(e) {
-				compareData(e);
-	        });
-		
-			
-			$(".addto").on("click", function() {
-				addToFilter();
-			});
+													$("#joinTextArea").html("");
 
-			$(".orto").on("click", function() {
-				addORToFilter();
-			});
-			$('.submitClear').click(function(e) {
-				document.getElementById("criteriaTextArea").innerHTML = "";
-			});
+												}
+											});
 
-			$('.joinClear').click(function(e) {
-				document.getElementById("joinTextArea").innerHTML = "";
-			});
+							$(".checkjoincls[name='joincheck']:checkbox").change(
+											function(event) {
 
-			$('#s1').change(function(e) {
-				validateSelectedValue();
-			});
-			$('#sj').change(function(e) {
-				validateSelectedValue();
-			});
-			$('#sj').click(function(e) {
-				if ($('#s1').val() != "") {
-					alert("please select only one field at a time...!!!");
-					return false;
-				}
-			});
-			$('#s1').click(function(e) {
-				if ($('#sj').val() != "") {
-					alert("please select only one field at a time...!!!");
-					return false;
-				}
-			});
-			$('#tables').click(function(e) {
-				callMetaDataTable();
-			});
+												$("#join_message").html("");
+												var table, unchkTable;
+												var tabletext = null;
+												var unchecked = false;
 
-			$('#table_select').change(function(e) {
-				retriveColumnAjaxCall();
-			});
+												if ($(this).is(":checked")) {
+													table = $(this).val();
+													tabletext = $(this).next(
+															'label').text()
+															.trim();
+												}
 
-			$('#table_select2').change(function(e) {
-				retriveJoinColumnAjaxCall();
-			});
+												// removing sideToggle btns when unchecked
+												if ($(this).is(":not(:checked)")) {
+													unchecked = true;
+													unchkTable = $(this).next('label').text().trim();
+													table = $(this).val();
 
-			$('#clear_btn_all').click(function(e) {
-				clearAllFields();
-			});
-			$('#s2').click(function(e) {
-				addBetweenFilter();
-			});
-			$('#groupby').click(function(e) {
-				groupBy(e);
-			});
-			$('#favouriteForm').click(function(e) {
-				saveFavouriteQuery(e);
-			});
-			$("#joinType").click(function(e){
-				JoinDescription(e);
-			});
-			$('#jointables').click(function(e) {
-                
-				if ($("#ondate").val().trim()) {
-					
-					if ($("#table_select").val()) {
-						$("#multiJoinTablediv").slideToggle();
-						$("#filterJoinLabel").slideToggle();
-						$("#sj").slideToggle();
-					} else {
-						alert("Primary Table is Required to Join..!!");
-					}
-				}
-			else
-				{
-				alert("Please select ondate..!");
-				}
-				
-				
-			});
+													for (var i = 1; i <= 5; i++) {
+														if ($("#table_btn_join"+ i).val()) {
+															var colbtntxt = $("#table_btn_join"+ i).val().trim();
+															colbtntxt = colbtntxt.substring(0,colbtntxt.indexOf("("));
 
-			$('#joinBtn').click(function(e) {
+															if (unchkTable == colbtntxt
+																	.trim()) {
+																$(
+																		"#table_btn_join"
+																				+ i)
+																		.val('');
+																$(
+																		"#table_btn_join"
+																				+ i)
+																		.hide();
+																$(
+																		"#columnsJoin"
+																				+ i)
+																		.empty();
+																$("#sj")
+																		.find(
+																				'optgroup, option')
+																		.remove(
+																				"optgroup[label="
+																						+ "'"
+																						+ unchkTable
+																						+ "'"
+																						+ "]");
+																$("#pri")
+																		.find(
+																				'optgroup, option')
+																		.remove(
+																				"optgroup[label="
+																						+ "'"
+																						+ unchkTable
+																						+ "'"
+																						+ "]");
+																$("#pri2")
+																		.find(
+																				'optgroup, option')
+																		.remove(
+																				"optgroup[label="
+																						+ "'"
+																						+ unchkTable
+																						+ "'"
+																						+ "]");
+																$("#sec")
+																		.find(
+																				'optgroup, option')
+																		.remove(
+																				"optgroup[label="
+																						+ "'"
+																						+ unchkTable
+																						+ "'"
+																						+ "]");
+															}
+														}
+													}
+													
+	/////////////////// Wirte code here for Remove drag fields when unchecked that corresponding table /////////////////////////////
+	
+													$('a', $('#drag')).each(function() {
+														if ($(this).attr('value').includes(table)) {
+																			$(this).remove();
+																		}
+													});
+	//Join Text Area 
+													var textarevalue=$("#joinTextArea").val().split(",");
+													var arrval="";
+													
+											     $.each(textarevalue,function(i){
+											    	 if(textarevalue[i].includes(table)){
+											    			arrval+=textarevalue[i]+",";
+											    	 }
+											     });
+											    var arrvalarry=arrval.substring(0, arrval.length - 1).split(",");
+											     $.each(arrvalarry,function(i){
+											    	 var textareaval=$("#joinTextArea").val();
+											    	 if(textareaval.includes(arrvalarry[i]+",")){
+											    		 $("#joinTextArea").html(textareaval.replace(arrvalarry[i]+",", ""));
+											    	 }
+											    	 else if(textareaval.includes(","+arrvalarry[i])){
+											    		 $("#joinTextArea").html(textareaval.replace(","+arrvalarry[i], ""));
+											    	 }
+											    	 else {
+											    		 $("#joinTextArea").html(textareaval.replace(arrvalarry[i], ""));
+											    	 }
+											    	 
+											     });
 
-				  $("#join_message").html("");
-				  $("#joinTextArea").removeClass("table_select_error");
-				  
-				 if ($("#table_btn_join1").val()!="" || $("#table_btn_join2").val()!=""  || $("#table_btn_join3").val()!=""  || $("#table_btn_join4").val()!="" ||$("#table_btn_join5").val()!="" ) {
-					
-					 $("#exampleModal").show();
-					 
-				} else {
-					$("#join_message").html("Please select join table..!!");
-				} 
-			});
+												}
+												var tablelist = [];
+												$(
+														"input[name='joincheck']:checkbox")
+														.each(
+																function() {
+																	if ($(this)
+																			.is(
+																					":checked")
+																			&& !(tablelist
+																					.includes($(
+																							this)
+																							.val()))) {
+																		if ($(
+																				"#table_btn")
+																				.val()
+																				.replace(
+																						"(Fields)",
+																						'')
+																				.trim() != tabletext) {
+																			tablelist
+																					.push($(
+																							this)
+																							.val());
+																		} else {
+																			$(
+																					"#join_message")
+																					.html(
+																							"Sorry same table can't be joined..!!");
+																			$(
+																					event.currentTarget)
+																					.prop(
+																							"checked",
+																							false);
+																			unchecked = true;
+																			return false;
+																		}
+																	}
+																});
 
-			$('#addJoin').click(function(e) {
-				addJoinfilter(e);
-			});
-		});
-
-		$(document).ready(function() {
-
-			$("#table_select").change(function() {
-				baseTableSelectOperation();
-			});
-           
-			// not using this function replaced by below function
-			$("#table_select2").change(function() {
-				$("#table_btn").show();
-
-				if ($("#table_select2").val()) {
-					$("#table_btn_join").show();
-					var btn = $("#table_select2 option:selected").text();
-					$("#table_btn_join").val(btn.trim() + "(Fields)");
-				} else {
-					$("#columnsJoin").empty();
-					var btn = $("#table_select2 option:selected").text();
-					$("#table_btn_join").val(btn.trim());
-
-					$('a', $('#drag')).each(function() {
-						if ($(this).text().includes("(S)")) {
-							$(this).remove();
-						}
-					});
-
-					$("#joinTextArea").html("");
-
-				}
-			});
-			
-			
-		$(".checkjoincls[name='joincheck']:checkbox").change(function(event) {
-			     
-			    $("#join_message").html("");
-			     var table,unchkTable;
-			     var tabletext=null; var unchecked=false;
-			     
-				if ($(this).is(":checked")) {
-				    table = $(this).val();
-				    tabletext=$(this).next('label').text().trim();
-				}
-				
-				// removing sideToggle btns when unchecked
-				if ($(this).is(":not(:checked)")) {
-					unchecked=true;
-					unchkTable=$(this).next('label').text().trim();
-					table = $(this).val();
-					
-				     	for (var i=1;i<=5;i++) {
-			          if($("#table_btn_join"+i).val()){
-							
-					var colbtntxt=	$("#table_btn_join"+i).val().trim();
-					colbtntxt=colbtntxt.substring(0,colbtntxt.indexOf("("));
-						
-						if (unchkTable==colbtntxt.trim()){
-							$("#table_btn_join"+i).val('');
-							$("#table_btn_join"+i).hide();
-							$("#columnsJoin"+i).empty();
-							$("#sj").find('optgroup, option').remove("optgroup[label="+"'"+unchkTable+"'"+"]");
-							$("#pri").find('optgroup, option').remove("optgroup[label="+"'"+unchkTable+"'"+"]");
-							$("#pri2").find('optgroup, option').remove("optgroup[label="+"'"+unchkTable+"'"+"]");
-							$("#sec").find('optgroup, option').remove("optgroup[label="+"'"+unchkTable+"'"+"]");
-						   }
-					   } 
-					}
-				     // Wirte code here for Remove drag fields when unchecked that corresponding table.	
-				    	$('a', $('#drag')).each(function() {
-							if ($(this).attr('value').includes(table)) {
-								$(this).remove();
-							}
+												if (tablelist.length >= 2
+														&& $(this).is(
+																":checked")) {
+													if (!confirm("please confirm do you want join more tables!")) {
+														if ($(this).is(
+																":checked")) {
+															$(this).prop(
+																	"checked",
+																	false);
+														}
+														return false;
+													}
+												}
+												retriveJoinColumnAjaxCall(
+														tablelist, table,
+														tabletext, unchecked,
+														event);
+											});
 						});
-				     	
-				}
-				 var tablelist = [];
-					$("input[name='joincheck']:checkbox").each(function() {
-						if ($(this).is(":checked") && !(tablelist.includes($(this).val()))){
-							if($("#table_btn").val().replace("(Fields)",'').trim()!=tabletext){
-								tablelist.push($(this).val());
-							}else{
-								$("#join_message").html("Sorry same table can't be joined..!!");
-								$(event.currentTarget).prop("checked", false);
-								 unchecked=true;
-								 return false;
-							}
-						}
-					});
-				
-				if(tablelist.length >=2 && $(this).is(":checked")){
-					if(!confirm("please confirm do you want join more tables!")) {
-						if ($(this).is(":checked")) {
-							   $(this).prop("checked", false);
-							}
-							return false;
-					}
-				}
-				retriveJoinColumnAjaxCall(tablelist,table,tabletext,unchecked,event);
-			});
-		});
 
 		$(document).ready(function() {
-			
-			   $('#table_btn').click(function(e)  {
-					if ($("#ondate").val().trim() == "")
-						{
-						alert("Please select ondate..!");
-						}
-					else
-						{
-						$("#columns").slideToggle("slow");
-						}
-				});
-			
-			
+
+			$('#table_btn').click(function(e) {
+				if ($("#ondate").val().trim() == "") {
+					alert("Please select ondate..!");
+				} else {
+					$("#columns").slideToggle("slow");
+				}
+			});
+
 			$("#table_btn_join1").click(function() {
 				$("#columnsJoin1").slideToggle("slow");
 			});
@@ -1000,6 +1083,9 @@ display: none;
 			});
 			$("#table_btn_join5").click(function() {
 				$("#columnsJoin5").slideToggle("slow");
+			});
+			$("#SaveQuery").click(function() {
+				$("#saveFavourite").show();
 			});
 		});
 		function KeyPressQT() {
@@ -1028,26 +1114,16 @@ display: none;
 			});
 
 		});
-		$(document).ready(function(){
+		
+		$(document).ready(function() {
 			$("#joinType").mouseover(function() {
 				var title = $("#joinType option:selected").attr('title')
-			    $(this).attr({
-			        title: title
-			    });
+				$(this).attr({
+					title : title
+				});
 			});
-			});
-
+		});
 	</script>
 	
 	<a id="back2Top" title="Back to top" href="#">&#10148;</a>
-</body>
-</html>
-
-     
-                            <%-- <select id="table_select2" data-init-plugin="select2" class="form_input pull-left half_width"  style="width: 25%; cursor: pointer; margin-right: 15px; height: 28px;">
-                                 <c:forEach items="${tables}" var="tableJoin">
-                                  <input type="checkbox" class='checkbox' name="languages" value="${tableJoin.tableName}"><c:out value="${tableJoin.name}"></c:out><br>
-								  <option value="<c:out value="${tableJoin.tableName}"></c:out>"><c:out value="${tableJoin.name}"></c:out></option> 
-								</c:forEach>
-                                <option value="<c:out value="${favouriteLists.table2}"></c:out>" selected="selected"><c:out value="${favouriteLists.table2}"></c:out></option>
-                            </select> --%>
+<%@ include file="/WEB-INF/pages/Footer.jsp"%>

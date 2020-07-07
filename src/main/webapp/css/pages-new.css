@@ -290,7 +290,7 @@ table {
 	position: absolute;
 	right: 20px;
 	top: 12px;
-}
+} 
 
 .reportzz-id {
 	margin: 0;
@@ -597,9 +597,9 @@ color: #fff;margin-bottom: 10px;padding: 0 0 0 10px;}
   width: 100%;
   font-size: 16px;
   padding: 12px 18px 10px 40px;
-  border: 1px solid #ddd;
-  /* margin-bottom: 12px; */ border-right: 0;
-}
+  border: 1px solid #dbcccc;
+  /* margin-bottom: 12px; border-right: 0;*/ 
+} 
 
 .container-contact100 {
   width: 100%;  
@@ -800,19 +800,19 @@ form {
 	margin-left: 63px;
 }
 /* The Modal (background) */
- .modal {
-	display: none; /* Hidden by default */
-	position: fixed; /* Stay in place */
-	z-index: 8; /* Sit on top */
+ /* .modal {
+	display: none; Hidden by default
+	position: fixed; Stay in place
+	z-index: 8; Sit on top
 	left: 0;
 	top: 0;
-	width: 100%; /* Full width */
-	height: 100%; /* Full height */
-	overflow: auto; /* Enable scroll if needed */
-	background-color: rgb(0, 0, 0); /* Fallback color */
-	background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+	width: 100%; Full width
+	height: 100%; Full height
+	overflow: auto; Enable scroll if needed
+	background-color: rgb(0, 0, 0); Fallback color
+	background-color: rgba(0, 0, 0, 0.4); Black w/ opacity
 	padding-top: 60px;
-}
+} */
 
 
 /* Modal Content/Box */
@@ -851,11 +851,11 @@ form {
 	width: 90%;   /* Could be more or less, depending on screen size */
 	height: 70%; 
 }
-.animate {
+/* .animate {
 	-webkit-animation: animatezoom 0.6s;
 	animation: animatezoom 0.6s
 }
-
+ */
 @-webkit-keyframes animatezoom {
 	from {-webkit-transform: scale(0)
 }

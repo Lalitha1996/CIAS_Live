@@ -41,7 +41,7 @@ function blockSpecialChar(e) {
 	}
 }
 
-//Join Filter
+///////////////////////////**********Join Filter***********/////////////////////////////////////
 
 function addJoinfilter(e){
 	
@@ -698,7 +698,6 @@ function submitCf(e) {
 									  });
 						} else {
 							$('.favourite').show();
-							$('#queuedownloads').show();
 							//$( "#groupby" ).empty();
 							//$( "#groupby" ).prop( "checked", false );
 							CreateTableFromJSON(response,dtA,dtB);
@@ -728,8 +727,8 @@ function submitCf(e) {
 															action : function(e, dt,node,config) {
 																e.preventDefault();
 																value="excelForm";
-																click : downloadValidation();
-																//filtercriteriavalidation();
+																click :createXls();
+																//click : downloadValidation();
 																//$("#excelForm").submit();
 															}
 														},
@@ -738,26 +737,34 @@ function submitCf(e) {
 															action : function(e, dt,node,config) {
 																e.preventDefault();
 																value="pipecsvForm";
-																click : downloadValidation();
-																//filtercriteriavalidation();
+																click : createCsvPipe();
 																//$("#pipecsvForm").submit();
 															}
 														},
+														{
+															text : '<i class="fa fa-file-text-o"></i> CSV',
+															action : function(e, dt,node,config) {
+																e.preventDefault();
+																value="pipecsvForm";
+																click : createCsv();
+																//$("#pipecsvForm").submit();
+															}
+														},
+														
 														{
 															text : '<i class="fa fa-file-pdf-o"></i> PDF',
 															action : function(e, dt,node,config) {
 																e.preventDefault();
 																value="pdfForm";
-																click : downloadValidation();
-																//filtercriteriavalidation();
+																click : createPdf();
 																//$("#pdfForm").submit();
 															}
 														},
-														{
+														/*{
 															extend : 'copyHtml5',
 															text : '<i class="fa fa-file"></i> Copy',
 															titleAttr : 'Copy'
-														},
+														},*/
 										   				{
 														   text : '<i class="fa fa-bar-chart-o" style ="background-color: #fff !important;"></i> Charts',
                                                            action : function(e, dt,node,config) {
@@ -823,7 +830,7 @@ function submitCf(e) {
 																	$('.report_field_table').hide();
 																	$("#date1").val(''); 
 																	$("#date2").val('');
-																$("#compareDateForm").show();
+																    $("#compareDateForm").show();
 																 
 															}
 														}
@@ -1021,7 +1028,10 @@ function formatData() {
 		});
 	}
 	var criteria = $("#criteriaTextArea").val(), table1 = $("#table_select").val(),table2=getTablelist().toString(),joinText=$("#joinTextArea").val(),joinType=$("#joinType").val(),ondate=$("#ondate").val(),d1=$("#date1").val(),d2=$("#date2").val();
+	var tbname1 = $("#table_select option:selected").text(), tbname2=getTablesText().toString();
+
 	
+
 	var jsonObject = {};
 	jsonObject["table1"] = table1;
 	jsonObject["table2"] = table2;
@@ -1034,6 +1044,9 @@ function formatData() {
 	jsonObject["ondate"] = ondate;
 	jsonObject["dateA"] = d1;
 	jsonObject["dateB"] = d2;
+	jsonObject["tbname1"]=tbname1;
+	jsonObject["tbname2"]=tbname2;
+	
 	var json = JSON.stringify(jsonObject);
 	$('#column').val(columnNames);
 	// direct download id's
@@ -1047,6 +1060,28 @@ function formatData() {
 	$("#csvpipe_btn").val(json);
 	return json;
 }
+
+function getTablesText(){
+    var tablelist = [];
+    var tableBtns=[];
+    
+    $("input[name='joincheck']:checkbox").each(function(){
+            if ($(this).is(":checked")){
+             tablelist.push($(this).val());
+            }
+    });
+    
+    if(tablelist.length>0){
+            for (var i=1; i<=tablelist.length;i++){
+                    if($("#table_btn_join"+i).val()){
+                            tableBtns.push($("#table_btn_join"+i).val().replace("(Fields)",'').trim());
+                    }
+            }
+    }
+    return tableBtns;
+}
+
+
 
 function getTablelist(){
 	
@@ -1297,20 +1332,20 @@ function retriveColumnAjaxCall() {
                                            .attr({value:value.name+' AS '+stringRemove(value.name),onclick:'moveButton(this)',id : "drag" +i, })))
                                   
                                            .append($("<li>")
-                                           .append($("<a class='btn btn-secondary' style='border-color:green'>")
+                                           .append($("<a class='btn btn-secondary' style='border-color:green;background-color:white;color:black'>")
                                            .text('SUM('+"("+uniqCol+") "+getAppLabel(response,value.name)+')')
                                            .attr({ value:'SUM('+value.name+') As '+'Sum'+stringRemoveOFlabel(value.name),onclick :'moveButton(this)',id : "drag" +i,}))) 
                                            
                                            .append($("<li>")
-                                           .append($("<a class='btn btn-secondary' style='border-color:green'>")
+                                           .append($("<a class='btn btn-secondary' style='border-color:green;background-color:white;color:black'>")
                                            .text('AVG('+"("+uniqCol+") "+getAppLabel(response,value.name)+')')
                                            .attr({ value:'AVG('+value.name+') As '+'Avg'+stringRemoveOFlabel(value.name),onclick :'moveButton(this)',id : "drag" +i,}))) 
                                            .append($("<li>") 
-                                           .append($("<a class='btn btn-secondary' style='border-color:green'>")
+                                           .append($("<a class='btn btn-secondary' style='border-color:green;background-color:white;color:black'>")
                                            .text('MIN('+"("+uniqCol+") "+getAppLabel(response, value.name)+')')
                                            .attr({value:'MIN('+value.name+') As '+'Min'+stringRemoveOFlabel(value.name),onclick :'moveButton(this)',id : "drag" +i,}))) 
                                            .append($("<li>") 
-                                           .append($("<a class='btn btn-secondary' style='border-color:green'>")
+                                           .append($("<a class='btn btn-secondary' style='border-color:green;background-color:white;color:black'>")
                                            .text('MAX('+"("+uniqCol+") "+getAppLabel(response,value.name)+')')
                                            .attr({value:'MAX('+value.name+') As '+'Max'+stringRemoveOFlabel(value.name),onclick :'moveButton(this)',id : "drag" +i,}))) 
                                            )); 
@@ -2020,6 +2055,8 @@ function saveFavouriteQuery(e) {
 			alert(response.saved);
 			$('#saveFavourite').hide();
 			$('.modal-backdrop').hide();
+			$('.modal-content input').val("");
+			$('.modal-content textarea').val("");
 		},
 		complete : function() {
 		}
@@ -2363,34 +2400,6 @@ function createPdf() {
 	}
 
 }
-/*function createPdf() {
-	if ($('#table_select').val() && $('#drag').text()) {
-		var json = formatData();
-		$.ajax({
-			type : "POST",
-			url : 'createPdf',
-			data : json,
-			processData : false,
-			contentType : "application/json; charset=utf-8",
-			error : function(xhr, status, error) {
-				closeModal();
-			},
-			success : function(response) {
-				closeModal();
-			},
-			beforeSend : function() {
-				openModal();
-			},
-		});
-	} else {
-		if (!$('#table_select').val()) {
-			alert("please select the table");
-		} else if (!$('#drag').text()) {
-			alert("please select the column");
-		}
-	}
-
-}*/
 
 /*function onDateSet(){
 	 var date = new Date();

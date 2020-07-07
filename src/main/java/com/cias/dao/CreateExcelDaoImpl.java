@@ -1,18 +1,26 @@
 package com.cias.dao;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.apache.log4j.Logger;
@@ -30,8 +38,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.cias.entity.QueryData;
+import com.cias.entity.ReportQueueData;
 import com.cias.utility.CebiConstant;
 import com.cias.utility.ConnectionException;
+import com.cias.utility.MappingConstant;
 import com.cias.utility.PdfUtils;
 
 @Repository
@@ -42,16 +52,20 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 	
 	@Autowired
 	CebiConstant cebiConstant;
+	
+	@Autowired
+	AdminReportDao adminreportdao;
 
 	@Override
-	public byte[] downloadExcel(QueryData queryData, String bank) {
+	public void downloadExcel(QueryData queryData, String bank,String filename) {
 		String parameter = "";
 		String columns = ""; 
 		String criteria = "";
 		String query=null;
 		int colNum = 0;
-		int rowcnt = 4;	
-		byte[] outArray = null;
+		int rowcnt = 4;
+		int recordCount =0;
+		int count=0;
 		Session session = cebiConstant.getCurrentSession(bank);
 		ResultSet resultSet = null;
 		Connection connection=null;
@@ -59,7 +73,7 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 		//HSSFWorkbook wb = new HSSFWorkbook();   // supports 65k records only
 		//HSSFSheet sheet = wb.createSheet();
 		
-		SXSSFWorkbook wb = new SXSSFWorkbook(100);     // SUPPORTS 10lack records up to ..  with xlsx format     
+		SXSSFWorkbook wb = new SXSSFWorkbook();     // SUPPORTS 10lack records up to ..  with xlsx format     
 		Sheet sheet = wb.createSheet();
 
 		CellStyle cellStyle = wb.createCellStyle();
@@ -99,37 +113,45 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 	        String time = format.substring(11, 19);
             cell.setCellValue("ReportId: "+queryData.getReportDataId()+CebiConstant.SPACE+"ReportDate:"+date+CebiConstant.SPACE+"Time:"+time);
 		
-
-		ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
 		columns = queryData.getColumnNames().trim().length() > 0 ? queryData.getColumnNames() : "";
 		parameter = queryData.getParameter().trim().length() > 0 ? queryData.getParameter() : "";
 		criteria = queryData.getQuery().trim().length() > 0 ? queryData.getQuery() : "";
 		
 		query = queryData.getTable2().isEmpty()?populateQuery(queryData, parameter, criteria):populateJoinQuery(queryData, parameter, criteria);
-		
+		 logger.info("Query Generated During Excel Download  downloadExcel():: " + query);
+		 System.out.println(query);
 		try {
 			 connection = ((SessionImpl) session).connection();
-			 prepareStatement = connection.prepareStatement(query);
+			 connection.setAutoCommit(false);
+			 prepareStatement = connection.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+			 prepareStatement.setFetchSize(5000);
 			 resultSet = prepareStatement.executeQuery();
 
+			
+			BufferedOutputStream bos = null;
+
+		    String zipFileLoc = MappingConstant.BANK_REPORT_LOCATION +filename+".xlsx";
+		   
+		    Path path = Files.createDirectories(Paths.get(MappingConstant.EXCEL_TEMP_LOCATION +filename+"/"));
+	          
 			String lstparam = parameter.substring(0, (parameter.length() - 1));
 			List<String> dbColumns = Arrays.asList(lstparam.split(","));
 			List<String> columnLables = Arrays.asList(columns.split(","));
-            
+			
 			 //table fields
              row = sheet.createRow(3);
-			
-             		for (String lbl : columnLables) {
-             				cell = row.createCell(colNum);
-             				cell.setCellStyle(cellStyle);
-             				sheet.autoSizeColumn((short) (colNum));
-             				cell.setCellValue(lbl);
-             				++colNum;
-             			}
-			
-          
-            while (resultSet.next()) {
-		
+			      
+			for (String lbl : columnLables) {
+				cell = row.createCell(colNum);
+				cell.setCellStyle(cellStyle);
+				sheet.autoSizeColumn((short) (colNum));
+				cell.setCellValue(lbl);
+				++colNum;
+			}
+             
+            
+     		while (resultSet.next()) {
+     			
 				colNum = 0;
 				row = sheet.createRow(rowcnt);
 				for (String label : dbColumns) {
@@ -145,12 +167,25 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 					++colNum;
 				}
 				++rowcnt;
+				recordCount++;
 				
 				//spreadsheet
 				int physicalNumberOfRows = sheet.getPhysicalNumberOfRows();
 				
 				if (physicalNumberOfRows > 1048570) {
-					sheet = wb.createSheet();
+					
+					++count;
+					
+				    bos = new BufferedOutputStream(new FileOutputStream(path.toString()+"/"+filename+"("+count+")"+".xlsx"));
+					wb.write(bos);
+					wb=new SXSSFWorkbook(); 
+				    sheet = wb.createSheet();
+				    cellStyle = wb.createCellStyle();
+					cellStyle.setWrapText(true);
+					font = wb.createFont();
+					font.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD);
+					cellStyle.setFont(font);
+					
 					physicalNumberOfRows = 0;
 					rowcnt = 1;
 					colNum = 0;
@@ -162,16 +197,56 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 						cell.setCellValue(lbl);
 						++colNum;
 						}
+					
 					}
 
 			}
+		++count;
+		bos = new BufferedOutputStream(new FileOutputStream(path.toString()+"/"+filename+"("+count+")"+".xlsx"));
+     	wb.write(bos);
 
-			wb.write(outByteStream);
+		
+     	    byte buffer[] = new byte[2048];
+		    FileOutputStream fos = new FileOutputStream(zipFileLoc+".zip");
+			ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(fos));
+			File inputDir = new File(path.toString());
+			String listOfFiles[] = inputDir.list();
+			BufferedInputStream bufferedInputStream = null;
+			FileInputStream fileInputStream=null;
+			for (String fileName : listOfFiles) {
+				System.out.println("Adding xlsx Files to zip: " + fileName);
+				fileInputStream = new FileInputStream(new File(inputDir, fileName));
+				bufferedInputStream = new BufferedInputStream(fileInputStream);
+				ZipEntry entry = new ZipEntry(fileName);
+				zipOutputStream.putNextEntry(entry);
+				int count1;
+				while ((count1 = bufferedInputStream.read(buffer)) != -1) {
+					zipOutputStream.write(buffer, 0, count1);
+				}bufferedInputStream.close();
+			}
+			zipOutputStream.close();
+			System.out.println("File Zipped!!!!!");
+			   
+			   //delete temp xlsx files from the path
+			   Files.walk(path)
+		      .sorted(Comparator.reverseOrder())
+		      .map(Path::toFile)
+		      .forEach(File::delete);
+	    
+	    fileInputStream.close();
+		fos.close();
+		bos.close();
+     	
+     	 ReportQueueData reportQueueData=adminreportdao.getReportQueueData(queryData.getReportDataId());
+		 reportQueueData.setTotalCount(recordCount+"");
+		 adminreportdao.updateReportQueueData(reportQueueData);
 			
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.info(e.getMessage());
 		} catch (OutOfMemoryError error) {
 			throw new ConnectionException("Failed to allocate Max memory...!");
+		} catch (Exception e) {
+			e.printStackTrace();
 		} finally {
 			if (resultSet != null) {
 				try {
@@ -192,8 +267,7 @@ public class CreateExcelDaoImpl extends PdfUtils implements CreateExcelDao {
 				}
 			}
 		}
-		outArray = outByteStream.toByteArray();
-		return outArray;
+
 	}
 
 }

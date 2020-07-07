@@ -154,7 +154,13 @@
 			<artifactId>amqp-client</artifactId>
 			<version>4.0.0</version>
 		</dependency>
-		
+	<!-- https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-jasper -->
+<!-- <dependency>
+    <groupId>org.apache.tomcat.embed</groupId>
+    <artifactId>tomcat-embed-jasper</artifactId>
+    <version>8.0.28</version>
+</dependency> -->
+	
 
 	</dependencies>
 	<build>

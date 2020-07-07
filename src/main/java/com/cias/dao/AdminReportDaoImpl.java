@@ -1,15 +1,12 @@
 package com.cias.dao;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
@@ -17,25 +14,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -45,9 +35,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StreamUtils;
 
-import com.cias.utility.Block;
-import com.cias.utility.Board;
-import com.cias.utility.Table;
 import com.cias.entity.AppMessages;
 import com.cias.entity.ApplicationLabel;
 import com.cias.entity.AuditHistory;
@@ -92,7 +79,7 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 	CreatePdfDao createPdfDao;
 	
 	@Autowired
-	CreateCsvDao createCsvpipedao;
+	CreateCsvDao createCsvdao;
 
 	private static final Logger logger = Logger.getLogger(AdminReportDaoImpl.class);
 
@@ -173,7 +160,7 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 	}
 	
 	
-	public String populateJoinQuery(QueryData table, String parameter, String criteria) {
+public String populateJoinQuery(QueryData table, String parameter, String criteria) {
 		
 		
 		if(table.getOndate()!=""){
@@ -189,7 +176,7 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 			criteria = criteria + " AND "+table.getTable1()+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+table.getTable2()+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
 			}else if (criteria.trim().length()==0 && table.getOndate().trim().length()>0){
 				
-				criteria = table.getTable1()+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+table.getTable2()+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
+				criteria = table.getTable1()+".RUN_DATE="+"'"+table.getOndate()+"'";
 			}}
 		
 		
@@ -216,25 +203,28 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 						 switch (Table2split.length) {
 					      case 1:
 					          sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
-					          + CebiConstant.QRY_WHERE + criteria;
+					          + CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" ";
 					        break;
 					      case 2:
 						      sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
-					          +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+CebiConstant.QRY_WHERE + criteria;
+					          +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'";
 					        break;
 					      case 3:
 					    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
-							 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "+CebiConstant.QRY_WHERE + criteria;
+							 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+					    	 +" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'";
 					        break;
 					      case 4:
 						    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
 								 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
-								 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+CebiConstant.QRY_WHERE + criteria;
+								 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"
+								 +" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[3]+".RUN_DATE="+"'"+table.getOndate()+"'";
 						        break;
 					      case 5:
 						    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
 								 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
-								 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+joinType+" "+Table2split[4]+" "+"ON"+" "+joinConsplit[4].trim()+" "+CebiConstant.QRY_WHERE + criteria;
+								 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+joinType+" "+Table2split[4]+" "+"ON"+" "+joinConsplit[4].trim()+" "+CebiConstant.QRY_WHERE + criteria
+								 +" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[3]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[4]+".RUN_DATE="+"'"+table.getOndate()+"'";
 						        break;
 					    }
 							
@@ -245,25 +235,29 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 							 switch (Table2split.length) {
 						      case 1:
 						          sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
-						          + CebiConstant.QRY_WHERE + criteria+" "+CebiConstant.FETCH100;
+						          + CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"+" "+CebiConstant.FETCH100;
 						        break;
 						      case 2:
 							      sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
-						          +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+CebiConstant.QRY_WHERE + criteria+" "+CebiConstant.FETCH100;
+						          +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+							    		  +" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" "+CebiConstant.FETCH100;
 						        break;
 						      case 3:
 						    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
-								 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "+CebiConstant.QRY_WHERE + criteria+" "+CebiConstant.FETCH100;
+								 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+						    	+" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" "+CebiConstant.FETCH100;
 						        break;
 						      case 4:
 							    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
 									 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
-									 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+CebiConstant.QRY_WHERE + criteria+" "+CebiConstant.FETCH100;
+									 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+									 +" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[3]+".RUN_DATE="+"'"+table.getOndate()+"'"+" "+CebiConstant.FETCH100;
 							        break;
 						      case 5:
 							    	 sql=sql+ parameterS + CebiConstant.QRY_FROM + table.getTable1() +" "+joinType+" "+Table2split[0]+ " ON " + joinConsplit[0].trim()+" "
 									 +joinType+" "+Table2split[1]+" "+"ON"+" "+joinConsplit[1].trim()+" "+joinType+" "+Table2split[2]+" "+"ON"+" "+joinConsplit[2].trim()+" "
-									 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+joinType+" "+Table2split[4]+" "+"ON"+" "+joinConsplit[4].trim()+" "+CebiConstant.QRY_WHERE + criteria+" "+CebiConstant.FETCH100;
+									 +joinType+" "+Table2split[3]+" "+"ON"+" "+joinConsplit[3].trim()+" "+joinType+" "+Table2split[4]+" "+"ON"+" "+joinConsplit[4].trim()+" "+CebiConstant.QRY_WHERE + criteria+" AND "+Table2split[0]+".RUN_DATE="+"'"+table.getOndate()+"'"
+									 +" AND "+Table2split[1]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[2]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[3]+".RUN_DATE="+"'"+table.getOndate()+"'"+" AND "+Table2split[4]+".RUN_DATE="+"'"+table.getOndate()+"'"+" "+CebiConstant.FETCH100;
 							        break;
 						    }
 						
@@ -420,13 +414,11 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 		String criteria = "";
 		Connection connection = null;
 		PreparedStatement prepareStatement = null;
-		Statement statement = null;
 		ResultSet resultSet = null;
 		Session session = null;
 		String query = null;
 		ColumnNames field;
 		String filename = null;
-		File fzip = null;
 		
 		List<ColumnNames> names = new ArrayList<>();
 		List<AppMessages> appMessages = new ArrayList<>();
@@ -454,16 +446,15 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
   		         
 			if(getTableData.getTable2()=="" && getTableData.getDateA()!="" && getTableData.getDateB()!=""){
 				query= populateCompareDateQuery(getTableData,parameter,criteria,getTableData.getDateA(),getTableData.getDateB());
-			}
-			else{
-				if(getTableData.getTable2()=="" || getTableData.getTable2()==null){
-					
-					query = populateQuery(getTableData, parameter, criteria);	
-				
-				}else{
-					query = populateJoinQuery(getTableData, parameter, criteria);	
+				} else {
+					if (getTableData.getTable2() == "" || getTableData.getTable2() == null) {
+
+						query = populateQuery(getTableData, parameter, criteria);
+
+					} else {
+						query = populateJoinQuery(getTableData, parameter, criteria);
+					}
 				}
-			} 
 			populateAuditHistory(getTableData.getTable1(),getTableData.getTable2(), master, query); 
 			if (criteria != null && !criteria.isEmpty()) {
 				validateTableCriteria(criteria, getTableData, tableMetaData, appMessages);
@@ -546,106 +537,37 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 			}
 	  } else if("csv".equalsIgnoreCase(getTableData.getReporttype())) {
 		  // by alimouala
-		     session = cebiConstant.getCurrentSession(bank);
-	         connection = ((SessionImpl) session).connection();
-	         connection.setAutoCommit(false);
-		  query=getTableData.getTable2().isEmpty()?super.populateQuery(getTableData, parameter, criteria):super.populateJoinQuery(getTableData, parameter, criteria);
-		  System.out.println(query);
-		  
-		  if (criteria != null && !criteria.isEmpty()) {
-				validateTableCriteria(criteria, getTableData,
-						tableMetaData, appMessages);
-			}
-			statement = (Statement) connection.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
-			//statement.setFetchSize(5000);
-			resultSet = statement.executeQuery(query);
-			
-			StringBuilder buffer = new StringBuilder();
-			ResultSetMetaData rsmd = resultSet.getMetaData();
-			int columnCount = rsmd.getColumnCount();
-			
-			List<String> ColumnLables = Arrays.asList(getTableData.getColumnNames().split(","));
-			
-			List<String> colummnName = new ArrayList<String>();
-			for (int i = 1; i <=columnCount; i++) {
-				//buffer.append(rsmd.getColumnName(i) + " , "); // this appends original columnNames..
-				buffer.append(ColumnLables.get(i-1) + " , ");
-				colummnName.add(rsmd.getColumnName(i));
-			}
-			int i = 0;
-			int j = 1;
-			BufferedWriter bw = null;
-			FileWriter fw = null;
-
 			SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
 			Date date = new Date(); 
 			filename = formatter.format(date) + "_" + getTableNames(getTableData) + "_" + getTableData.getReportDataId() + ".csv";
 			String csvFileLoc =MappingConstant.BANK_REPORT_LOCATION + filename;
-			fw = new FileWriter(csvFileLoc, true);
-			bw = new BufferedWriter(fw);
-			bw.append(buffer.toString());
-			
-			while (resultSet.next()) {
-				
-				bw.append(CebiConstant.NEW_LINE);
-				for (int k = 0; k < colummnName.size(); k++) {
-					String label = colummnName.get(k);
-					label = label.contains("(") && label.contains(")") ? label.substring(label.indexOf('(') + 1, label.indexOf(')')) : label;
-					label.trim();
-					if (resultSet.getString(label) == null || resultSet.getString(label).isEmpty()) {
-						bw.append(StringUtils.rightPad(CebiConstant.EMPTY_SPACE, label.length())).append("    ,    ");
-					} else
-						bw.append(StringUtils.rightPad(resultSet.getString(label).trim(), resultSet.getString(label).trim().length() - label.length())).append("    ,    ");
-					;
-				}
-				i++;
-				
-				if (i % (j * 10000) == 0) {
-					j++;
-					bw.flush();
-				}
-			}
-			bw.close();
-			
+			createCsvdao.downloadCsv(getTableData,bank,csvFileLoc);
 			Date enddate = new Date();
 			ReportQueueData reportQueueData = getReportQueueData(getTableData.getReportDataId());
 			reportQueueData.setFileName(filename);
 			reportQueueData.setTimecomplete(enddate);
-			reportQueueData.setTimetake(enddate.getTime() - date1.getTime() + "");
-			reportQueueData.setStatus(CebiConstant.COMPLETED);
-			reportQueueData.setTotalCount(i + "");
-			updateReportQueueData(reportQueueData);
-            createZipFile(filename, csvFileLoc);
+			reportQueueData.setTimetake(enddate.getTime() - date1.getTime() +"");
+			if(!reportQueueData.getStatus().equalsIgnoreCase("STOPPED")){
+				reportQueueData.setStatus(CebiConstant.COMPLETED);
+				updateReportQueueData(reportQueueData);
+	            createZipFile(filename, csvFileLoc);
+			}
 			
 			
 	  }else if ("excel".equalsIgnoreCase(getTableData.getReporttype())) {
-		    byte[] bytearray  = createExceldao.downloadExcel(getTableData, bank);
-			SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
-			Date date = new Date();
-			filename = formatter.format(date) + "_"+ getTableNames(getTableData) + "_"+ getTableData.getReportDataId() + ".xlsx";
-		    String csvFileLoc =MappingConstant.BANK_REPORT_LOCATION + filename;
-		
-				try {
-					FileOutputStream out = new FileOutputStream(new File(csvFileLoc));
-					out.write(bytearray);
-					out.close();
-
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		    
+		    SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");  
+		    filename = formatter.format(new Date()) + "_"+ getTableNames(getTableData) + "_"+ getTableData.getReportDataId();
+		    createExceldao.downloadExcel(getTableData, bank,filename);
 			Date enddate = new Date();
 			ReportQueueData reportQueueData = getReportQueueData(getTableData.getReportDataId());
-			reportQueueData.setFileName(filename);
+			reportQueueData.setFileName(filename+".xlsx");
 			reportQueueData.setTimecomplete(enddate);
-			reportQueueData.setTimetake(enddate.getTime()- date1.getTime() + "");
+			reportQueueData.setTimetake(enddate.getTime() - date1.getTime() + "");
 			reportQueueData.setStatus(CebiConstant.COMPLETED);
-			//reportQueueData.setTotalCount(i + "");
 			updateReportQueueData(reportQueueData);
-			createZipFile(filename, csvFileLoc);
 			
-			} else if ("pdf".equalsIgnoreCase(getTableData.getReporttype())) {
+		} else if ("pdf".equalsIgnoreCase(getTableData.getReporttype())) {
 				
 				byte[] PdfbyteArray = createPdfDao.downloadPdf(getTableData, bank);
 				SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
@@ -668,38 +590,24 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 				ReportQueueData reportQueueData = getReportQueueData(getTableData.getReportDataId());
 				reportQueueData.setFileName(filename);
 				reportQueueData.setTimecomplete(enddate);
-				reportQueueData.setTimetake(enddate.getTime()- date1.getTime() + "");
+				reportQueueData.setTimetake(enddate.getTime() - date1.getTime() + "");
 				reportQueueData.setStatus(CebiConstant.COMPLETED);
-				//reportQueueData.setTotalCount(i + "");
 				updateReportQueueData(reportQueueData);
 				createZipFile(filename, csvFileLoc);
 				
 			}else if("csvpipe".equalsIgnoreCase(getTableData.getReporttype())) {
 				
-				byte[] csvbyteArray = createCsvpipedao.downloadCsvPipeSeperator(getTableData, bank);
-				SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
+			    SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyy");
 				Date date = new Date();
 				filename = formatter.format(date) + "_"+ getTableNames(getTableData) + "_"+ getTableData.getReportDataId() + ".csv";
 			    String csvFileLoc = MappingConstant.BANK_REPORT_LOCATION +filename;
-			
-					try {
-						
-						FileOutputStream out = new FileOutputStream(new File(csvFileLoc));
-						out.write(csvbyteArray);
-						out.close();
-
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				Date enddate = new Date();
+			    createCsvdao.downloadCsvPipeSeperator(getTableData, bank,csvFileLoc);
+			    Date enddate = new Date();
 				ReportQueueData reportQueueData = getReportQueueData(getTableData.getReportDataId());
 				reportQueueData.setFileName(filename);
 				reportQueueData.setTimecomplete(enddate);
-				reportQueueData.setTimetake(enddate.getTime()- date1.getTime() + "");
+				reportQueueData.setTimetake(enddate.getTime() - date1.getTime() + "");
 				reportQueueData.setStatus(CebiConstant.COMPLETED);
-				//reportQueueData.setTotalCount(i + "");
 				updateReportQueueData(reportQueueData);
 				createZipFile(filename, csvFileLoc);
 				
@@ -1004,10 +912,10 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 	           Query qry = session.createSQLQuery("select max(run_date) from ccod_master");
                Date date =(Date) qry.list().get(0);
                logger.info("Latest data present with this date:: "+date);
-	        list.add("with dep as ( (select branch_no,sum(curr_bal) as Balance from ccod_master where run_date = :date and curr_bal > 0 group by branch_no union all select branch_no,sum(curr_bal) as Balance from demand_dep_master where run_date = :date and curr_bal > 0 group by branch_no union all select branch_no,sum(principal) as Balance from time_dep_master where run_date = :date and principal > 0 group by branch_no ) ) select branch_no , round(CAST(sum(Balance)/1000000 AS NUMERIC),2) from dep group by branch_no order by branch_no");  
+	        /*list.add("with dep as ( (select branch_no,sum(curr_bal) as Balance from ccod_master where run_date = :date and curr_bal > 0 group by branch_no union all select branch_no,sum(curr_bal) as Balance from demand_dep_master where run_date = :date and curr_bal > 0 group by branch_no union all select branch_no,sum(principal) as Balance from time_dep_master where run_date = :date and principal > 0 group by branch_no ) ) select branch_no , round(CAST(sum(Balance)/1000000 AS NUMERIC),2) from dep group by branch_no order by branch_no");  
 	        list.add("with Adv as ( (select branch_no as branch_no, sum(loan_bal) as Balance from Loan_Details where run_date= :date group by branch_no union all select branch_no as branch_no, sum(curr_bal) as Balance from ccod_master where run_date= :date and curr_bal < 0 group by branch_no) ) select branch_no , round(CAST(sum(Balance)/1000000 AS NUMERIC),2) from Adv group by branch_no order by branch_no");  
 	        list.add("with Npa as ( (select branch_no,sum(curr_bal) as Balance from ccod_master where run_date= :date and curr_bal > 0 and old_bad_debt_ind >= 4 group by branch_no union all select branch_no as branch_no, sum(loan_bal) as Balance from Loan_Details where run_date= :date and old_bad_debt_ind >= 4 group by branch_no )) select branch_no , round(CAST(sum(Balance)/1000000 AS NUMERIC),2) from Npa group by branch_no order by branch_no");  
-	        List<Object[]> listdata=null;
+	        */List<Object[]> listdata=null;
 	        List<List<Object[]>> listdataOne=new ArrayList<List<Object[]>>();
 	        for(String s:list) {  
 	        Query query = session.createSQLQuery(s);
@@ -1042,21 +950,14 @@ public class AdminReportDaoImpl extends PdfUtils implements AdminReportDao {
 	@Override
 	@Transactional
 	public ReportQueueData getReportQueueData(int id) {
-		return (ReportQueueData) sessionFactory.getCurrentSession().get(
-				ReportQueueData.class, id);
+		return (ReportQueueData) sessionFactory.getCurrentSession().get(ReportQueueData.class, id);
 	}
 
 	@Override
 	public void updatereportStatus(int id, String inProcess) {
-		Query query = sessionFactory
-				.getCurrentSession()
-				.createSQLQuery(
-						"UPDATE `reportqueuetable` SET `status`= :rStatus WHERE `id` = :rid");
+		Query query = sessionFactory.getCurrentSession().createSQLQuery("UPDATE `reportqueuetable` SET `status`= :rStatus WHERE `id` = :rid");
 		query.setParameter("rStatus", inProcess);
 		query.setParameter("rid", id);
 		query.executeUpdate();
 	}
-
-
-	
 }

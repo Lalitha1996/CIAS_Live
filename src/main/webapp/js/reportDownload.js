@@ -1,24 +1,12 @@
 $(document).ready(function() {
-
+	
 	$("#getReport").on('click', function() {
 		getResponse();
-	});
-
+	}); 
 	$("#btReload").on('click', function() {
 		refreshPage();
 	});
-	
 	$("#btReload").attr("disabled", true);
-	
-	// $(document).ready(function() {
-	// $('.status:contains("INPROCESS")').css('color', 'red');
-	// $('.status:contains("COMPLETED")').css('color', 'green');
-	// });
-
-});
-
-$("#btReload").on('click', function() {
-	refreshPage();
 });
 
 function refreshPage() {
@@ -29,8 +17,7 @@ function refreshPage() {
 	jsonObject["date"] = $('#datepicker-13').val();
 	var jsonOb = JSON.stringify(jsonObject);
 
-	$
-			.ajax({
+	$.ajax({
 				type : "POST",
 				data : jsonOb,
 				dataType : "json",
@@ -45,14 +32,12 @@ function refreshPage() {
 					}
 				},
 				beforeSend : function() {
-					/* $.blockUI(); */
-					
 					$("#clockdiv").html(" ");
+					openModal();
+					$("#clockdiv").empty();
 				},
 				success : function(response) {
-					debugger;
-					/* alert("inside success"); */
-					/* $.unblockUI(); */
+					closeModal();
 					 var time_in_minutes = 3;
 					 var current_time = Date.parse(new Date());
 					 var deadline = new Date(current_time + time_in_minutes*60*1000);
@@ -82,74 +67,65 @@ function refreshPage() {
 										
 											if(sts == 'DELETED' || sts == 'IN QUEUE'){
 												tr += '<td >'
-													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 2;' method='post' action='downloadfile'> <button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"
-													+ value.fileName
-													+ "' id='downloadbtn' style='width: 71%;'>"
-													+ "<span class='glyphicon glyphicon-download-alt'/>"
-													+ "Download"
+													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 0;' method='post' action='downloadfile'> " +
+															"<button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"+ value.fileName + "' id='downloadbtn' style='width: 160%;'>"
+													+ "<span class='fa fa-download'/>"
 													+ "</button> </form>"
 													+ '</td>';
 											
 											tr += '<td >'
 												+ "<button type='button' disabled class='btn btn-default btn-sm deletebtn' name='fileName' value='"
 												+ value.id
-												+ "' style= 'width: 74%;'>"
-												+ "<span class='glyphicon glyphicon-remove-sign'/>"
-												+ "Delete" + "</button>"
+												+ "' style= 'width: 105%;'>"
+												+ "<span class='fa fa-trash-o fa-lg' aria-hidden='true'/>"
+												+ "</button>"
 												+ '</td>';
 											} else if (sts == 'INPROCESS') {
 												tr += '<td >'
-													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 2;' method='post' action='downloadfile'> <button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"
-													+ value.fileName
-													+ "' id='downloadbtn' style='width: 71%;'>"
-													+ "<span class='glyphicon glyphicon-download-alt'/>"
-													+ "Download"
+													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 0;' method='post' action='downloadfile'> " +
+													  "<button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"+ value.fileName + "' id='downloadbtn' style='width: 160%;'>"
+													+ "<span class='fa fa-download' aria-hidden='true'/>"
 													+ "</button> </form>"
 													+ '</td>';
 												
-												
 												tr += '<td >'
-													+ "<button type='button' class='btn btn-default btn-sm deletebtn' name='fileName' value='"
+													+ "<button type='button' class='btn btn-default btn-sm deletebtn'  name='fileName' value='"
 													+ value.id
-													+ "' style= 'width: 74%;color: white;background-color: #b90a0a;'>"
-													+ "<span class='glyphicon glyphicon-remove-sign'/>"
-													+ "STOP" + "</button>"
+													+ "' style= 'width: 105%; color: white;background-color: #b90a0a;'>"
+													+ "<span class='fa fa-ban' aria-hidden='true'/>"
+													+ "</button>"
 													+ '</td>';
 												
 											}else if (sts == 'STOP' ){
 												tr += '<td >'
-													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 2;' method='post' action='downloadfile'> <button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"
-													+ value.fileName
-													+ "' id='downloadbtn' style='width: 71%;'>"
-													+ "<span class='glyphicon glyphicon-download-alt'/>"
-													+ "Download"
+													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 0;' method='post' action='downloadfile'> " +
+															"<button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"+ value.fileName+ "' id='downloadbtn' style='width: 160%;'>"
+													+ "<span class='fa fa-download' aria-hidden='true'/>"
 													+ "</button> </form>"
 													+ '</td>';
 											
 											tr += '<td >'
-												+ "<button type='button' disabled class='btn btn-default btn-sm deletebtn' name='fileName' value='"
+												+ "<button type='button' disabled class='btn btn-default btn-sm deletebtn'  id =stop name='fileName' value='"
 												+ value.id
-												+ "' style= 'width: 74%;'>"
-												+ "<span class='glyphicon glyphicon-remove-sign'/>"
-												+ "Delete" + "</button>"
+												+ "' style= 'width: 105%;'>"
+												+ "<span class='fa fa-ban' aria-hidden='true'/>"
+												+ "</button>"
 												+ '</td>';
 											} else{
 												tr += '<td >'
-													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 2;' method='post' action='downloadfile'> <button type='submit' class='btn btn-default btn-sm  downloadbtn' name='fileName' value='" 
-													+ value.fileName
-													+ "' id='downloadbtn' style='color: white; background: #0a860a; width: 71%;'>"
-													+ "<span class='glyphicon glyphicon-download-alt'/>"
-													+ "Download"
+													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 0;' method='post' action='downloadfile'> " +
+															"<button type='submit' class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"+ value.fileName+ "' id='downloadbtn' style='color: white;width: 160%; background: #0a860a;>"
+													+ "<span class='fa fa-download' aria-hidden='true'/>"
 													+ "</button> </form>"
 													+ '</td>';
 												
 												
 												tr += '<td >'
-													+ "<button type='button' class='btn btn-default btn-sm deletebtn' name='fileName' value='"
+													+ "<button type='button' class='btn btn-default btn-sm deletebtn'  name='fileName' value='"
 													+ value.id
-													+ "' style= 'width: 74%;color: white;background-color: #b90a0a;'>"
-													+ "<span class='glyphicon glyphicon-remove-sign'/>"
-													+ "Delete" + "</button>"
+													+ "' style= 'width: 105%;color: white;background-color: #b90a0a;'>"
+													+ "<span class='fa fa-trash-o fa-lg' aria-hidden='true'/>"
+													+ "</button>"
 													+ '</td>';
 												
 											}
@@ -179,8 +155,8 @@ function refreshPage() {
 									            }
 											
 										});
+						closeModal();
 						var table = $('#downfilestatustble').DataTable();
-
 						$("#DButton").attr("disabled", true);
 					}
 
@@ -188,11 +164,6 @@ function refreshPage() {
 
 			});
 }
-
-$("#getReport").on('click', function() {
-	getResponse();
-	
-});
 
 function getResponse() {
 	var url = "getReportData";
@@ -202,8 +173,7 @@ function getResponse() {
 	jsonObject["date"] = $('#datepicker-13').val();
 	var jsonOb = JSON.stringify(jsonObject);
 
-	$
-			.ajax({
+	$.ajax({
 				type : "POST",
 				data : jsonOb,
 				dataType : "json",
@@ -218,13 +188,11 @@ function getResponse() {
 					}
 				},
 				beforeSend : function() {
-					$("#clockdiv").html(" ");
-					/* $.blockUI(); */
+					openModal();
+					$("#clockdiv").empty();
 				},
 				success : function(response) {
-					debugger;
-					/* alert("inside success"); */
-					/* $.unblockUI(); */
+					closeModal();
 					 var time_in_minutes = 3;
 					 var current_time = Date.parse(new Date());
 					 var deadline = new Date(current_time + time_in_minutes*60*1000);
@@ -254,73 +222,64 @@ function getResponse() {
 										
 											if(sts == 'DELETED' || sts == 'IN QUEUE'){
 												tr += '<td >'
-													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 2;' method='post' action='downloadfile'> <button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"
-													+ value.fileName
-													+ "' id='downloadbtn' style='width: 71%;'>"
-													+ "<span class='glyphicon glyphicon-download-alt'/>"
-													+ "Download"
+													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 0;' method='post' action='downloadfile'> " +
+															"<button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"+ value.fileName + "' id='downloadbtn' style='width: 160%;'>"
+													+ "<span class='fa fa-download' aria-hidden='true'/>"
 													+ "</button> </form>"
 													+ '</td>';
 											
 											tr += '<td >'
-												+ "<button type='button' disabled class='btn btn-default btn-sm deletebtn' name='fileName' value='"
+												+ "<button type='button' disabled class='btn btn-default btn-sm deletebtn'  name='fileName' value='"
 												+ value.id
-												+ "' style= 'width: 74%;'>"
-												+ "<span class='glyphicon glyphicon-remove-sign'/>"
-												+ "Delete" + "</button>"
+												+ "' style= 'width: 105%;'>"
+												+ "<span class='fa fa-trash-o fa-lg' aria-hidden='true'/>"
+											    + "</button>"
 												+ '</td>';
 											} else if (sts == 'INPROCESS') {
 												tr += '<td >'
-													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 2;' method='post' action='downloadfile'> <button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"
-													+ value.fileName
-													+ "' id='downloadbtn' style='width: 71%;'>"
-													+ "<span class='glyphicon glyphicon-download-alt'/>"
-													+ "Download"
+													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 0;' method='post' action='downloadfile'> " +
+															"<button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"+ value.fileName + "' id='downloadbtn' style='width: 160%;'>"
+													+ "<span class='fa fa-download' aria-hidden='true'/>"
 													+ "</button> </form>"
 													+ '</td>';
 												
-												
 												tr += '<td >'
-													+ "<button type='button' class='btn btn-default btn-sm deletebtn' name='fileName' value='"
+													+ "<button type='button' class='btn btn-default btn-sm deletebtn'   name='fileName' value='"
 													+ value.id
-													+ "' style= 'width: 74%;color: white;background-color: #b90a0a;'>"
-													+ "<span class='glyphicon glyphicon-remove-sign'/>"
-													+ "STOP" + "</button>"
+													+ "' style= 'width: 105%;color: white;background-color: #b90a0a;'>"
+													+ "<span class='fa fa-ban' aria-hidden='true'/>"
+													+ "</button>"
 													+ '</td>';
 												
 											}else if (sts == 'STOP'){
 												tr += '<td >'
-													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 2;' method='post' action='downloadfile'> <button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"
-													+ value.fileName
-													+ "' id='downloadbtn' style='width: 71%;'>"
-													+ "<span class='glyphicon glyphicon-download-alt'/>"
-													+ "Download"
+													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 0;' method='post' action='downloadfile'> " +
+															"<button type='submit' disabled class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"+ value.fileName+ "' id='downloadbtn' style='width: 160%;'>"
+													+ "<span class='fa fa-download' aria-hidden='true'/>"
 													+ "</button> </form>"
 													+ '</td>';
 											
 											tr += '<td >'
-												+ "<button type='button' disabled class='btn btn-default btn-sm deletebtn' name='fileName' value='"
+												+ "<button type='button' disabled class='btn btn-default btn-sm deletebtn' id =stop name='fileName' value='"
 												+ value.id
-												+ "' style= 'width: 74%;'>"
-												+ "<span class='glyphicon glyphicon-remove-sign'/>"
-												+ "Delete" + "</button>"
+												+ "' style= 'width: 105%;'>"
+												+ "<span class='fa fa-ban' aria-hidden='true'/>"
+												+ "</button>"
 												+ '</td>';
 											} else{
 												tr += '<td >'
-													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 2;' method='post' action='downloadfile'> <button type='submit' class='btn btn-default btn-sm  downloadbtn' name='fileName' value='" 
-													+ value.fileName
-													+ "' id='downloadbtn' style='color: white; background: #0a860a; width: 71%;'>"
-													+ "<span class='glyphicon glyphicon-download-alt'/>"
-													+ "Download"
+													+ "<form id='csvForm' style='padding: 0; position: relative;z-index: 0;' method='post' action='downloadfile'> " +
+															"<button type='submit' class='btn btn-default btn-sm  downloadbtn' name='fileName' value='"+ value.fileName+ "' id='downloadbtn' style='color: white; width:160%; background: #0a860a;'>"
+													+ "<span class='fa fa-download' aria-hidden='true'/>"
 													+ "</button> </form>"
 													+ '</td>';
 												
 												tr += '<td >'
-													+ "<button type='button' class='btn btn-default btn-sm deletebtn' name='fileName' value='"
+													+ "<button type='button' class='btn btn-default btn-sm deletebtn'  name='fileName' value='"
 													+ value.id
-													+ "' style= 'width: 74%;color: white;background-color: #b90a0a;'>"
-													+ "<span class='glyphicon glyphicon-remove-sign'/>"
-													+ "Delete" + "</button>"
+													+ "' style= 'width: 110%;color: white;background-color: #b90a0a;'>"
+													+ "<span class='fa fa-trash-o fa-lg' aria-hidden='true'/>"
+													+ "</button>"
 													+ '</td>';
 												
 											}
@@ -349,10 +308,13 @@ function getResponse() {
 									            }
 											
 										});
+						closeModal();
 						var table = $('#downfilestatustble').DataTable();
-
 						var interval = 1000 * 60 * 3; // 3 min for every 3 min  refreshPage() fun calls
-						setInterval('refreshPage()', interval); // call back function
+						 clearInterval(localStorage.getItem("nthtime")); 
+					 	 localStorage.removeItem("nthtime"); 
+						 var Nthtime = setInterval('refreshPage()', interval);   // call back function 
+					 	localStorage.setItem("nthtime",Nthtime); 
 					}
 
 				}
@@ -360,35 +322,8 @@ function getResponse() {
 			});
 }
 
-/*
-$('.delbtn').on('click', function() {
-	deletreRecord();
-});
+$('#downfilestatustble').on('click','.deletebtn', function() {
 
-*/
-
-/*
-function deletreRecord(){
-	var url = "getDeleteSts";
-	var jsonObject = {};
-
-	jsonObject["flag"] = $('.delbtn').val();
-	
-	var data=JSON.stringify($("#deletebtn").serializeObject());
-	private String branCode = "";
-	private String date = "";
-	private String id = "";
-	private String startTime = "";
-	private String endTime = "";
-	private String queId = "";
-	private String status = "";
-	private String fileName = "";
-	private String flag = "";
-	
-	
-*/
-
-$('#downfilestatustble').on('click', '.deletebtn', function() {
 	var $row = $(this).closest("tr");
 	var id = $row.find("td:nth-child(2)").text().trim();
 	var url = "getDeleteSts";
@@ -400,6 +335,19 @@ $('#downfilestatustble').on('click', '.deletebtn', function() {
 	var queId = "";
 	var fileName = "";
 	var flag = "";
+	//alert
+	if(status == "INPROCESS"){
+		if(!confirm('Do you want to Stop file ?'))
+			{
+			return false;
+			}
+		}
+	else{
+		if(!confirm('Do you want to Delete file ?'))
+		{
+		return false;
+		}
+	}
 	var reportDownload = {
 		"id" : id,
 		"status" : status,
@@ -432,14 +380,10 @@ $('#downfilestatustble').on('click', '.deletebtn', function() {
 				success : function(response) {
 					 alert(response.statusList);
 					 refreshPage();
-					
-				
 				}
 
 			});
 });
-
-
 
 
 function time_remaining(endtime){
@@ -452,12 +396,27 @@ function time_remaining(endtime){
 }
 function run_clock(id,endtime){
 	var clock = document.getElementById(id);
+	//clearTimeout(timeinterval);
+	timerStopFunction();
+	update_clock();
+	var timeinterval = setInterval(update_clock,1000);
+	localStorage.setItem("mytime",timeinterval);
+	
 	function update_clock(){
 		var t = time_remaining(endtime);
 		clock.innerHTML = t.minutes+' m '+' : '+t.seconds+' s ';
-		if(t.total<=0){ clearInterval(timeinterval); }
+		//clearTimeout(t);
+		if(t.total<=0){
+			clearInterval(timeinterval); 
+		}
 	}
-	update_clock();// run function once at first to avoid delay
-	var timeinterval = setInterval(update_clock,1000);
+	function timerStopFunction()
+	 {
+		 clearInterval(localStorage.getItem("mytime"));
+		 localStorage.removeItem("mytime");
+	 }
+	//update_clock();// run function once at first to avoid delay
+	//var timeinterval = setInterval(update_clock,1000);
 }
+
 

@@ -30,8 +30,8 @@ public class HibernateUtil {
 			settings.put(Environment.DRIVER, db.getDriverClass());
 			settings.put(Environment.URL, db.getDatabaseUrl());
 			settings.put(Environment.USER, db.getUsername());
-			settings.put(Environment.PASS, AES.decrypt(db.getPassword()));
-			//settings.put(Environment.PASS, db.getPassword());
+			//settings.put(Environment.PASS, AES.decrypt(db.getPassword()));
+			settings.put(Environment.PASS, db.getPassword());
 			settings.put(Environment.SHOW_SQL, true);
 			settings.put(Environment.HBM2DDL_AUTO, "create");
 			settings.put(Environment.DIALECT, "org.hibernate.dialect.PostgreSQLDialect");

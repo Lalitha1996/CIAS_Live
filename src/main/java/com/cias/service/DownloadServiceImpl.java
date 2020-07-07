@@ -105,8 +105,8 @@ public class DownloadServiceImpl implements DownloadService {
 		ReportQueueData reportQueueData = (ReportQueueData) o;
 		Transaction tx = session.beginTransaction();
 		if (reportDownload.getStatus().equalsIgnoreCase("INPROCESS")) {
-			reportQueueData.setStatus("STOP");
-			msge = "QueueID  :" + foo + " - Stop Sucessfully";
+			reportQueueData.setStatus("STOPPED");
+			msge = "QueueID  :" + foo + " - Stopped Sucessfully";
 		} else {
 			reportQueueData.setStatus("DELETED");
 			msge = "QueueID  :" + foo + " - Deleted Sucessfully";

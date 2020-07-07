@@ -1,13 +1,14 @@
 package com.cias.dao;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +27,6 @@ import com.cias.entity.QueryData;
 import com.cias.utility.CebiConstant;
 import com.cias.utility.ConnectionException;
 import com.cias.utility.PdfUtils;
-import com.opencsv.CSVWriter;
 
 @Repository
 @Transactional
@@ -39,11 +39,13 @@ public class CreateCsvDaoImpl extends PdfUtils implements CreateCsvDao {
 	
 	@Autowired
 	SessionFactory sessionFactory;
+	
+	@Autowired
+	AdminReportDao adminreportdao;
 
 	@Override
-	public byte[] downloadCsv(QueryData queryData, String bank) {
-		byte[] outArray = null;
-		 byte[] bytesArray = null;
+	public void downloadCsv(QueryData queryData, String bank,String csvFileLoc) {
+		
 		Session session = cebiConstant.getCurrentSession(bank);
 		ResultSet resultSet = null;
 		String parameter = "";
@@ -51,65 +53,82 @@ public class CreateCsvDaoImpl extends PdfUtils implements CreateCsvDao {
 		String criteria = "";
 		PreparedStatement prepareStatement = null;
 		Connection connection = null;
+		String query=null;
 
 		parameter = queryData.getParameter().trim().length() > 0 ? queryData.getParameter() : "";
 		criteria = queryData.getQuery().trim().length() > 0 ? queryData.getQuery() : "";
 		columns = queryData.getColumnNames().trim().length() > 0 ? queryData.getColumnNames() : "";
-		String query = populateQuery(queryData, parameter, criteria);
-		StringBuilder buffer = new StringBuilder();
+		  query=queryData.getTable2().isEmpty()?populateQuery(queryData, parameter, criteria):populateJoinQuery(queryData, parameter, criteria);
+		  System.out.println(query);
+		  logger.info("Query Generated During CSV DOWNLOAD :: " + query);
+		
 		try {
-
 			connection = ((SessionImpl) session).connection();
-			prepareStatement = connection.prepareStatement(query);
+			connection.setAutoCommit(false);
+			prepareStatement = connection.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+			prepareStatement.setFetchSize(5000);
 			resultSet = prepareStatement.executeQuery();
-
-			String lstparam = parameter.substring(0, (parameter.length() - 1));
-			List<String> dbColumns = Arrays.asList(lstparam.split(","));
-			List<String> columnLables = Arrays.asList(columns.split(","));
-
-			for (String lbl : columnLables) {
-				buffer.append(lbl + CebiConstant.COMMA);
-			}
-			File file = new File("cebi.csv");
-			CSVWriter writer = new CSVWriter(new FileWriter(file));
-			writer.writeNext(columns.split(","));
-			writer.writeAll(resultSet, false);
-			writer.close();
-			bytesArray = new byte[(int) file.length()];
-			FileInputStream fis = new FileInputStream(file);
-			fis.read(bytesArray); // read file into bytes[]
-			fis.close();
-			/*BufferedReader bufferedReader =new BufferedReader(reader);
 			
-			byte[] bs =bufferedReader.*/
-			/*while (resultSet.next()) {
-				buffer.append(CebiConstant.NEW_LINE);
-				for (String label : dbColumns) {
+			ResultSetMetaData rsmd = resultSet.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			StringBuilder buffer = new StringBuilder();
+			
+			List<String> ColumnLables = Arrays.asList(columns.split(","));
+			List<String> dbColumns = new ArrayList<String>();
+			
+			for (int i = 1; i <=columnCount; i++) {
+				buffer.append(ColumnLables.get(i-1) + CebiConstant.COMMA);
+				dbColumns.add(rsmd.getColumnName(i));
+			}
+
+			int i = 0;
+			int j = 1;
+			BufferedWriter bw = null;
+			FileWriter fw = null;
+			fw = new FileWriter(csvFileLoc, true);
+			bw = new BufferedWriter(fw);
+			bw.append(buffer.toString());
+			
+			while (resultSet.next()) {
+				
+				bw.append(CebiConstant.NEW_LINE);
+				for (String label:dbColumns) {
 					label = label.contains("(") && label.contains(")") ? label.substring(label.indexOf('(') + 1, label.indexOf(')')) : label;
-					if (resultSet.getString(label) == null || resultSet.getString(label).isEmpty())
-						buffer.append(StringUtils.rightPad(CebiConstant.EMPTY_SPACE,label.length()) + CebiConstant.COMMA);
-					else
-						buffer.append(StringUtils.rightPad(resultSet.getString(label).trim(),resultSet.getString(label).trim().length()-label.length())+ CebiConstant.COMMA);
+					label.trim();
+					if (resultSet.getString(label) == null || resultSet.getString(label).isEmpty()) {
+						bw.append(StringUtils.rightPad(CebiConstant.EMPTY_SPACE, label.length())).append("    ,    ");
+					} else
+						bw.append(StringUtils.rightPad(resultSet.getString(label).trim(), resultSet.getString(label).trim().length() - label.length())).append("    ,    ");
 				}
-			}*/
+				i++;
+				
+				if (i % (j * 10000) == 0) {
+					j++;
+					bw.flush();
+				}
+			}
+			ReportQueueData reportQueueData=adminreportdao.getReportQueueData(queryData.getReportDataId());
+			reportQueueData.setTotalCount(i+"");
+			adminreportdao.updateReportQueueData(reportQueueData);
+			bw.close();
+			fw.close();
+		
 		} catch (SQLException e) {
 			logger.info(e.getMessage());
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();
-		}catch (OutOfMemoryError error) {
+		} catch (OutOfMemoryError error) {
 			throw new ConnectionException("Failed to allocate Max memory...!");
-		}finally {
-			closeConnection(resultSet,connection,prepareStatement);
+		} finally {
+			closeConnection(resultSet, connection, prepareStatement);
 		}
-		outArray = buffer.toString().getBytes();
 
-		return bytesArray;
 	}
 
 	@Override
-	public byte[] downloadCsvPipeSeperator(QueryData queryData, String bank) {
-		byte[] outArray = null;
+	public void downloadCsvPipeSeperator(QueryData queryData, String bank,String csvFileLoc) {
+		
 		Session session = cebiConstant.getCurrentSession(bank);
 		ResultSet resultSet = null;
 		Connection connection = null;
@@ -123,54 +142,73 @@ public class CreateCsvDaoImpl extends PdfUtils implements CreateCsvDao {
 		columns = queryData.getColumnNames().trim().length() > 0 ? queryData.getColumnNames() : "";
 		
 		// by Mskh
-		 if(queryData.getTable2().isEmpty()){ 
-			 
-			 query = populateQuery(queryData, parameter, criteria);
-		}else{
-			 
-			query = populateJoinQuery(queryData, parameter, criteria);
-		}
+		query = queryData.getTable2().isEmpty() ? populateQuery(queryData, parameter, criteria):populateJoinQuery(queryData, parameter, criteria);
+		logger.info("Query Generated During CSV PIPE DOWNLOAD :: " + query);
+		System.out.println(query);
 		
-		StringBuilder buffer = new StringBuilder();
+		
 		try {
-
 			connection = ((SessionImpl) session).connection();
-			prepareStatement = connection.prepareStatement(query);
+			connection.setAutoCommit(false);
+			prepareStatement = connection.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+			prepareStatement.setFetchSize(5000);
 			resultSet = prepareStatement.executeQuery();
 
 			String lstparam = parameter.substring(0, (parameter.length() - 1));
-			List<String> dbColumns = Arrays.asList(lstparam.split(","));
+			List<String> dbColumns = new ArrayList<String>();
 			List<String> columnLables = Arrays.asList(columns.split(","));
 
-			for (String lbl : columnLables) {
-				buffer.append(lbl + CebiConstant.PIPELINE);
+			StringBuilder buffer = new StringBuilder();
+			ResultSetMetaData rsmd = resultSet.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			
+			for (int i=1;i<=columnCount;i++) {
+				buffer.append(columnLables.get(i-1) + CebiConstant.PIPELINE);
+				dbColumns.add(rsmd.getColumnName(i));
 			}
+			
+			int i = 0;
+			int j = 1;
+			BufferedWriter bw = null;
+			FileWriter fw = null;
+			fw = new FileWriter(csvFileLoc, true);
+			bw = new BufferedWriter(fw);
+			bw.append(buffer.toString());
+			
 			while (resultSet.next()) {
 				buffer.append(CebiConstant.NEW_LINE);
 				for (String label : dbColumns) {
-					label = label.contains("(") && label.contains(")") ? label.substring(label.indexOf("As") + 3, label.length()) : label;
-					label = label.contains("AS") && !label.contains(")") ? label.substring(label.indexOf("AS")+3, label.length()) : label;
+					label = label.contains("(") && label.contains(")") ? label.substring(label.indexOf('(') + 1, label.indexOf(')')) : label;
 					label.trim();
 					if (resultSet.getString(label) == null || resultSet.getString(label).isEmpty())
-						buffer.append(StringUtils.rightPad(CebiConstant.EMPTY_SPACE,label.length()) + CebiConstant.PIPELINE);
+						bw.append(StringUtils.rightPad(CebiConstant.EMPTY_SPACE,label.length()) + CebiConstant.PIPELINE);
 					else
-						buffer.append(StringUtils.rightPad(resultSet.getString(label).trim(),resultSet.getString(label).trim().length()-label.length())+ CebiConstant.PIPELINE);
+						bw.append(StringUtils.rightPad(resultSet.getString(label).trim(),resultSet.getString(label).trim().length()-label.length())+ CebiConstant.PIPELINE);
 
 				}
+				i++;
+				
+				if (i % (j * 10000) == 0) {
+					j++;
+					bw.flush();
+				}
 			}
+			
+			ReportQueueData reportQueueData=adminreportdao.getReportQueueData(queryData.getReportDataId());
+			reportQueueData.setTotalCount(i+"");
+			adminreportdao.updateReportQueueData(reportQueueData);
+			bw.close();
+			fw.close();
+			
 		} catch (SQLException e) {
 			logger.info(e.getMessage());
+		} catch (IOException e) {
+			logger.info(e.getMessage());
 		} finally {
-			closeConnection(resultSet,connection,prepareStatement);
+			closeConnection(resultSet, connection, prepareStatement);
 		}
-		outArray = buffer.toString().getBytes();
-
-		return outArray;
 	}
 
-	
-	//RabbitMQ
-	
 	@Override
 	public int addReportQueueData(ReportQueueData reportQueueData) {
 		return (int) sessionFactory.getCurrentSession().save(reportQueueData);

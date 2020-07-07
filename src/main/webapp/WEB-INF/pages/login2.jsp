@@ -304,9 +304,9 @@ body {
 		</div>	
 <!-- //////////////////////////Jquery Libraries////////////////////////////////////////// -->
 
-	<script type="text/javascript" src="js/jquery-1.12.4.js"></script>
-    <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-	<script type="text/javascript" src="js/main.js"></script>
+	<script type="text/javascript" src="js/jquery-3.5.1.js"></script>
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
 	<script type="text/javascript" src="js/report.js"></script>
 	
 	

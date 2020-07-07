@@ -270,8 +270,8 @@ input {
 	border-style: solid;
 	/* background: #2f4f4f4f; */ background: #fff;
 }
-.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th
-{border: 0px solid #f1f1f1;}
+ .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th
+{border: 0px solid #f1f1f1;} 
 .btn-success,
 .btn-success:focus {
     color: #ffffff;

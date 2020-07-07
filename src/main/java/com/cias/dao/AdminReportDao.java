@@ -27,6 +27,7 @@ public interface AdminReportDao {
 	public List<Object[]> createShowChart(String bankname);
 	public List<List<Object[]>> createChartReport(String bankname);
 	public List<String> retriveisCriteriaTables(String bankname);
+
 	//RabbitMQ
 	int addReportQueueData(ReportQueueData reportQueueData);
 	
@@ -35,8 +36,4 @@ public interface AdminReportDao {
 	void updateReportQueueData(ReportQueueData reportQueueData);
 	
 	public void updatereportStatus(int id, String inProcess);
-	//public String checkQueryType(String table1);
-	//public List<String> getOriginalData(String variable, String table1);
-	//public List<Object[]> getMandatoryField(String table1);
-
 }

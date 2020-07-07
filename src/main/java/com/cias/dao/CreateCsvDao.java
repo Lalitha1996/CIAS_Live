@@ -1,13 +1,15 @@
 package com.cias.dao;
 
-import com.cias.entity.QueryData;
 import com.cias.entity.ReportQueueData;
+import com.cias.entity.QueryData;
 
 public interface CreateCsvDao {
-	public byte[] downloadCsv(QueryData queryData,String bank);
-	public byte[] downloadCsvPipeSeperator(QueryData queryData, String bank);
-	//RabbitMQ
+	
 	public int addReportQueueData(ReportQueueData datQueueData);
-	ReportQueueData getReportQueueData(int id);
 
+	ReportQueueData getReportQueueData(int id);
+	
+	public void downloadCsv(QueryData queryData,String bank,String csvFileLoc);
+
+	public void downloadCsvPipeSeperator(QueryData queryData, String bank,String csvFileLoc);
 }
